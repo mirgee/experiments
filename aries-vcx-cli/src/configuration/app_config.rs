@@ -25,25 +25,25 @@ impl std::fmt::Display for KeyDerivationMethod {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct AppConfig {
-    #[arg(short, long, default_value = "http://localhost:9000")]
+    #[arg(long, default_value = None)]
     ledger_url: Option<String>,
-    #[arg(short, long, default_value = None)]
+    #[arg(long, default_value = "genesis/indypool.txn")]
     genesis_file: Option<String>,
-    #[arg(short, long, default_value = None)]
+    #[arg(long, default_value = None)]
     trustee_seed: Option<String>,
-    #[arg(short, long, default_value = "5050")]
+    #[arg(long, default_value = "5050")]
     port: u32,
-    #[arg(short, long, default_value = "localhost")]
-    host: u32,
-    #[arg(short, long, default_value = "info")]
+    #[arg(long, default_value = "localhost")]
+    host: String,
+    #[arg(long, default_value = "info")]
     log_level: String,
-    #[arg(short, long, default_value = "true")]
+    #[arg(long, default_value = "true")]
     accept_taa: bool,
-    #[arg(short, long, default_value = "8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY")]
+    #[arg(long, default_value = "8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY")]
     wallet_key: String,
-    #[arg(short, long, value_enum, default_value = "RAW")]
+    #[arg(long, value_enum, default_value = "raw")]
     wallet_kdf: KeyDerivationMethod,
-    #[arg(short, long)]
+    #[arg(long)]
     agent_name: Option<String>,
 }
 
@@ -56,8 +56,8 @@ impl AppConfig {
         self.port
     }
 
-    pub fn host(&self) -> u32 {
-        self.host
+    pub fn host(&self) -> &str {
+        self.host.as_ref()
     }
 
     pub fn log_level(&self) -> &str {
