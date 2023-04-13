@@ -9,3 +9,4 @@ edition = "2021"
 did_parser = { path = "../did_parser" }
 did_doc_builder = { path = "../did_doc_builder" }
 lru = "0.10.0"
+async-trait = "0.1.68"

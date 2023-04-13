@@ -1,77 +1,37 @@
-extern crate did_doc_builder;
-extern crate did_parser;
+pub extern crate did_doc_builder;
+pub extern crate did_parser;
 
-use std::{collections::HashMap, error::Error, num::NonZeroUsize};
+pub mod error;
 
+use std::collections::HashMap;
+
+use async_trait::async_trait;
 use did_doc_builder::DIDDocument;
 use did_parser::ParsedDID;
-use lru::LruCache;
+use error::{DIDResolverError, GenericError};
 
-#[derive(Debug)]
-enum DIDError {
-    InvalidDID,
-    UnsupportedMethod(String),
-}
-
-impl Error for DIDError {}
-
-impl std::fmt::Display for DIDError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            DIDError::InvalidDID => write!(f, "Invalid DID"),
-            DIDError::UnsupportedMethod(_) => write!(f, "Unsupported DID method"),
-        }
-    }
-}
-
-trait BaseLedger {
-    fn get_attr(&self, did: &str) -> Result<String, ()>;
-}
-
-struct IndyDID {
-    ledger: Box<dyn BaseLedger>,
-    cache: LruCache<String, DIDDocument>,
-}
-
-impl IndyDID {
-    pub fn new(ledger: Box<dyn BaseLedger>, cache_size: NonZeroUsize) -> Self {
-        IndyDID {
-            ledger,
-            cache: LruCache::new(cache_size),
-        }
-    }
-}
-
-struct SovDID {
-    ledger: Box<dyn BaseLedger>,
-    cache: LruCache<String, DIDDocument>,
-}
-
-impl SovDID {
-    pub fn new(ledger: Box<dyn BaseLedger>, cache_size: NonZeroUsize) -> Self {
-        SovDID {
-            ledger,
-            cache: LruCache::new(cache_size),
-        }
-    }
-}
-
-trait DIDResolver: Sync + Send {
-    fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, DIDError>;
+#[async_trait]
+pub trait DIDResolver {
+    type DIDResolverError: GenericError;
+    async fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, Self::DIDResolverError>;
 }
 
 pub struct ResolverRegistry {
-    resolvers: HashMap<String, Box<dyn DIDResolver>>,
+    resolvers: HashMap<String, Box<dyn DIDResolver<DIDResolverError = Box<dyn GenericError>>>>,
 }
 
 impl ResolverRegistry {
-    fn new() -> Self {
+    pub fn new() -> Self {
         ResolverRegistry {
             resolvers: HashMap::new(),
         }
     }
 
-    pub fn register_resolver(&mut self, method: String, resolver: Box<dyn DIDResolver>) {
+    pub fn register_resolver(
+        &mut self,
+        method: String,
+        resolver: Box<dyn DIDResolver<DIDResolverError = Box<dyn GenericError>>>,
+    ) {
         self.resolvers.insert(method, resolver);
     }
 
@@ -79,11 +39,11 @@ impl ResolverRegistry {
         self.resolvers.remove(method);
     }
 
-    pub fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, DIDError> {
-        let method = did.method;
+    pub async fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, Box<dyn GenericError>> {
+        let method = did.method();
         match self.resolvers.get(method) {
-            Some(resolver) => resolver.resolve(did),
-            None => Err(DIDError::UnsupportedMethod(method.to_string())),
+            Some(resolver) => resolver.resolve(did).await,
+            None => Err(Box::new(DIDResolverError::UnsupportedMethod)),
         }
     }
 }
