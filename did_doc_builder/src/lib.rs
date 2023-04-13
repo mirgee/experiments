@@ -3,7 +3,7 @@ extern crate serde_json;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DIDDocument {
     pub id: String,
@@ -12,7 +12,7 @@ pub struct DIDDocument {
     pub service: Vec<Service>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicKey {
     pub id: String,
@@ -21,7 +21,7 @@ pub struct PublicKey {
     pub public_key_base58: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Authentication {
     pub id: String,
@@ -30,7 +30,7 @@ pub struct Authentication {
 }
 
 // TODO: It seems that this may contain pretty much anything
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Service {
     pub id: String,
