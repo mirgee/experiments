@@ -15,7 +15,7 @@ type DIDRange = Range<usize>;
 // or referencing the original did is not great either. Ouroboros introduces
 // too much complexity, so we might store the original did as a string
 // and the other fields could be tuples of indeces into the original string.
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ParsedDID {
     did: DIDRange,
     did_url: String,
@@ -25,6 +25,23 @@ pub struct ParsedDID {
     fragment: Option<DIDRange>,
     query: Option<DIDRange>,
     params: HashMap<String, String>, // TODO
+}
+
+trait Default { fn default() -> Self; }
+
+impl Default for ParsedDID {
+    fn default() -> Self {
+        ParsedDID {
+            did: 0..0,
+            did_url: String::new(),
+            method: 0..0,
+            id: 0..0,
+            path: None,
+            fragment: None,
+            query: None,
+            params: HashMap::new(),
+        }
+    }
 }
 
 pub struct DIDParser;
