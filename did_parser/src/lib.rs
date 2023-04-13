@@ -11,10 +11,6 @@ use std::{collections::HashMap, ops::Range};
 
 type DIDRange = Range<usize>;
 
-// TODO:: We don't want to allocate unnecessarily, but self-referencing
-// or referencing the original did is not great either. Ouroboros introduces
-// too much complexity, so we might store the original did as a string
-// and the other fields could be tuples of indeces into the original string.
 #[derive(Debug, PartialEq, Clone)]
 pub struct ParsedDID {
     did: DIDRange,
@@ -65,7 +61,7 @@ static DID_MATCHER: Lazy<Regex> = Lazy::new(|| {
 
 });
 
-impl<'a> ParsedDID {
+impl ParsedDID {
     pub fn parse(did_url: String) -> Result<Self, ParseError> {
        if did_url.is_empty() {
             return Err(ParseError::InvalidDIDURL);
@@ -185,7 +181,7 @@ mod test {
             $(
                 #[test]
                 fn $name() {
-                    assert!(ParsedDID::parse($input).is_err());
+                    assert!(ParsedDID::parse($input.to_string()).is_err());
                 }
             )*
         };

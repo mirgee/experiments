@@ -26,9 +26,9 @@ impl ResolverRegistry {
         self.resolvers.remove(method);
     }
 
-    pub async fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, GenericError> {
+    pub async fn resolve(&mut self, did: ParsedDID) -> Result<DIDDocument, GenericError> {
         let method = did.method();
-        match self.resolvers.get(method) {
+        match self.resolvers.get_mut(method) {
             Some(resolver) => resolver.resolve(did).await,
             None => Err(Box::new(DIDResolverError::UnsupportedMethod)),
         }
@@ -47,7 +47,7 @@ mod tests {
     #[async_trait]
     #[automock]
     impl DIDResolvable for DummyDIDResolver {
-        async fn resolve(&self, did: ParsedDID) -> Result<DIDDocument, GenericError> {
+        async fn resolve(&mut self, did: ParsedDID) -> Result<DIDDocument, GenericError> {
             Ok(DIDDocument::new(did.did()))
         }
     }
