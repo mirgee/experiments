@@ -3,10 +3,13 @@ name = "did_resolver_sov"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 did_resolver = { path = "../did_resolver" }
 aries_vcx_core = { path = "/Users/ab006rh/Source/aries-vcx/aries_vcx_core" }
 lru = "0.10.0"
 async-trait = "0.1.68"
+env_logger = "0.10.0"
+log = "0.4.17"
+
+[dev-dependencies]
+aries_vcx_core = { path = "/Users/ab006rh/Source/aries-vcx/aries_vcx_core", features = ["test_utils"] }
