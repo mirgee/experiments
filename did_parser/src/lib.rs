@@ -9,7 +9,7 @@ use std::{collections::HashMap, ops::Range};
 
 type DIDRange = Range<usize>;
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone)]
 pub struct ParsedDID {
     did_url: String,
     did: DIDRange,
@@ -21,90 +21,117 @@ pub struct ParsedDID {
     params: HashMap<DIDRange, DIDRange>,
 }
 
-fn parse_param(rest: &str, start: usize, end: usize) -> Result<(usize, usize, usize), ParseError> {
+fn parse_key_value(
+    did_url: &str,
+    start: usize,
+    end: usize,
+) -> Result<(usize, usize, usize), ParseError> {
+    // Skip separator
     let key_start = start + 1;
-    let value_start = rest[key_start..end]
+    // Value starts after equal sign
+    // No equal sign is an error
+    let value_start = did_url[key_start..end]
         .find('=')
-        .map_or(end, |i| key_start + i + 1);
+        .map(|i| key_start + i + 1)
+        .ok_or(ParseError::InvalidDIDURL)?;
+    // Empty key or value is an error
     if value_start == key_start || value_start == end {
         return Err(ParseError::InvalidDIDURL);
     }
-    let next_pos = rest[value_start..end]
+    // Value ends at end of string or next separator
+    let next_pos = did_url[value_start..end]
         .find(|c: char| c == ';' || c == '?' || c == '#' || c == '/' || c == '&')
         .map_or(end, |i| value_start + i);
 
     Ok((key_start, value_start, next_pos))
 }
 
+fn parse_param(
+    did_url: &str,
+    current_pos: usize,
+) -> Result<(HashMap<DIDRange, DIDRange>, usize), ParseError> {
+    let (key_start, value_start, next_pos) = parse_key_value(did_url, current_pos, did_url.len())?;
+    let mut params = HashMap::new();
+    params.insert(key_start..value_start - 1, value_start..next_pos);
+    Ok((params, next_pos))
+}
+
+fn parse_query(
+    did_url: &str,
+    current_pos: usize,
+) -> Result<(HashMap<DIDRange, DIDRange>, usize), ParseError> {
+    let (key_start, value_start, next_pos) = parse_key_value(did_url, current_pos, did_url.len())?;
+    let mut queries = HashMap::new();
+    queries.insert(key_start..value_start - 1, value_start..next_pos);
+    Ok((queries, next_pos))
+}
+
+fn parse_did_method_id(did_url: &str) -> Result<(DIDRange, DIDRange, DIDRange), ParseError> {
+    // DID = "did:" method ":" method-specific-id
+    let method_start = did_url.find(':').ok_or(ParseError::InvalidDIDURL)?;
+    let method_end = did_url[method_start + 1..]
+        .find(':')
+        .map(|i| i + method_start + 1)
+        .ok_or(ParseError::InvalidDIDURL)?;
+
+    // TODO
+    // assumed: method-specific-id = 1*idchar
+    // actual : method-specific-id = *( *idchar ":" ) 1*idchar
+    let id_start = method_end + 1;
+    let id_end = did_url[id_start..]
+        .find(|c: char| c == ';' || c == '/' || c == '?' || c == '#' || c == '&')
+        .map_or(did_url.len(), |i| i + id_start);
+
+    let did = 0..id_end;
+    let method = method_start + 1..method_end;
+    let id = id_start..id_end;
+
+    // No method-specific-id is an error
+    if id.is_empty() {
+        return Err(ParseError::InvalidDIDURL);
+    }
+
+    Ok((did, method, id))
+}
+
+fn parse_path(did_url: &str, current_pos: usize) -> Option<DIDRange> {
+    // Path ends with query, fragment, param or end of string
+    let path_end = did_url[current_pos..]
+        .find(|c: char| c == '?' || c == '#' || c == ';')
+        .map_or(did_url.len(), |i| i + current_pos);
+    Some(current_pos..path_end)
+}
+
 impl ParsedDID {
     pub fn parse(did_url: String) -> Result<Self, ParseError> {
-        let method_start = did_url.find(':').ok_or(ParseError::InvalidDIDURL)?;
-        let mut iter = did_url[method_start + 1..].char_indices();
-        let method_end = iter
-            .by_ref()
-            .find(|&(_, c)| c == ':')
-            .map(|(i, _)| i + method_start + 1)
-            .ok_or(ParseError::InvalidDIDURL)?;
-
-        let id_start = method_end + 1;
-        let id_end = iter
-            .by_ref()
-            .find(|&(_, c)| c == ';' || c == '/' || c == '?' || c == '#' || c == '&')
-            .map_or(did_url.len(), |(i, _)| i + method_start + 1);
-
-        let did = 0..id_end;
-        let method = method_start + 1..method_end;
-        let id = id_start..id_end;
+        let (did, method, id) = parse_did_method_id(&did_url)?;
 
         let mut path = None;
         let mut fragment = None;
         let mut queries = HashMap::new();
         let mut params = HashMap::new();
 
-        let mut current_pos = id_end;
+        let mut current_pos = id.end;
 
         while current_pos < did_url.len() {
             match did_url.chars().nth(current_pos) {
                 Some(';') => {
-                    let (key_start, value_start, next_pos) =
-                        parse_param(&did_url, current_pos, did_url.len())?;
-                    params.insert(key_start..value_start - 1, value_start..next_pos);
+                    let (new_params, next_pos) = parse_param(&did_url, current_pos)?;
+                    params.extend(new_params);
                     current_pos = next_pos;
                 }
                 Some('/') => {
                     if path.is_none() {
-                        let path_end = did_url[current_pos..]
-                            .find(|c: char| c == '?' || c == '#' || c == ';')
-                            .map_or(did_url.len(), |i| i + current_pos);
-                        path = Some(current_pos..path_end);
-                        current_pos = path_end;
+                        path = parse_path(&did_url, current_pos);
+                        current_pos = path.as_ref().unwrap().end;
                     } else {
                         current_pos += 1;
                     }
                 }
                 Some('?') | Some('&') => {
-                    let mut query_start = current_pos + 1;
-                    while query_start < did_url.len() {
-                        let key_end = did_url[query_start..]
-                            .find('=')
-                            .map_or(did_url.len(), |i| query_start + i);
-                        let value_start = key_end + 1;
-                        if value_start >= did_url.len() {
-                            return Err(ParseError::InvalidDIDURL);
-                        }
-                        let next_pos = did_url[value_start..]
-                            .find(|c: char| {
-                                c == ';' || c == '?' || c == '#' || c == '/' || c == '&'
-                            })
-                            .map_or(did_url.len(), |i| value_start + i);
-                        queries.insert(query_start..key_end, value_start..next_pos);
-                        if did_url[next_pos..].starts_with('&') {
-                            query_start = next_pos + 1;
-                        } else {
-                            current_pos = next_pos;
-                            break;
-                        }
-                    }
+                    let (new_queries, next_pos) = parse_query(&did_url, current_pos)?;
+                    queries.extend(new_queries);
+                    current_pos = next_pos;
                 }
                 Some('#') => {
                     if fragment.is_none() {
@@ -203,6 +230,7 @@ mod test {
             $(
                 #[test]
                 fn $name() {
+                    println!("Testing {:?}", ParsedDID::parse($input.to_string()));
                     assert!(ParsedDID::parse($input.to_string()).is_err());
                 }
             )*

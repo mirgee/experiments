@@ -60,6 +60,8 @@ mod tests {
         pub(self) teardown: Arc<dyn Fn() -> BoxFuture<'static, ()>>,
     }
 
+    fn init_test_logging() {}
+
     impl SetupProfile {
         pub async fn init() -> SetupProfile {
             init_test_logging();
