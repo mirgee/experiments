@@ -5,5 +5,6 @@ use did_parser::ParsedDID;
 
 #[async_trait]
 pub trait DIDResolvable {
+    // Use interior mutability instead of &mut self?
     async fn resolve(&mut self, did: ParsedDID) -> Result<DIDDocument, GenericError>;
 }

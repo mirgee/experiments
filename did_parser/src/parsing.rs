@@ -29,6 +29,8 @@ pub(crate) fn parse_key_value(
     Ok((key_start, value_start, next_pos))
 }
 
+// TODO: Support relative DID URLs
+// TODO: Support tunnel methods
 pub(crate) fn parse_did_method_id(
     did_url: &str,
 ) -> Result<(DIDRange, DIDRange, DIDRange), ParseError> {

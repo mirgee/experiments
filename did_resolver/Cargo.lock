@@ -69,6 +69,7 @@ dependencies = [
 name = "did_parser"
 version = "0.1.0"
 dependencies = [
+ "itertools",
  "once_cell",
  "ouroboros",
  "regex",
