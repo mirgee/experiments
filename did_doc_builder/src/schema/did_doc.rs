@@ -10,6 +10,7 @@ use super::{
 type ControllerAlias = OneOrList<Did>;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[serde(default)]
 #[serde(rename_all = "camelCase")]
 pub struct DIDDocument {
     id: Did,

@@ -5,8 +5,6 @@ use did_doc_builder::schema::{
     types::{did::Did, uri::Uri},
 };
 
-use serde_json::json;
-
 // Test data: valid DID document JSON string
 const VALID_DID_DOC_JSON: &str = r#"
 {
@@ -35,12 +33,6 @@ const VALID_DID_DOC_JSON: &str = r#"
     ]
 }
 "#;
-
-#[test]
-fn test_uri() {
-    let uri: Uri = "did:example:123456789abcdefghi#vcs".parse().unwrap();
-    println!("{:?}", uri);
-}
 
 #[test]
 fn test_deserialization() {
