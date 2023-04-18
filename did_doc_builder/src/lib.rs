@@ -10,4 +10,6 @@ pub(crate) mod uri;
 pub(crate) mod utils;
 pub(crate) mod verification_method;
 
+// TODO: Adjust visibility appropriately
 pub use did_doc::DIDDocument;
+pub use uri::Uri;

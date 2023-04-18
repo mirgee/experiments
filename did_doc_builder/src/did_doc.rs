@@ -1,3 +1,4 @@
+use crate::did_url::DidUrl;
 use crate::service::Service;
 use crate::uri::Uri;
 use crate::utils::OneOrList;
@@ -32,10 +33,11 @@ pub struct DIDDocument {
 }
 
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub struct DIDDocumentBuilder {
     id: Did,
     also_known_as: Vec<Uri>,
-    controller: Option<ControllerAlias>,
+    controller: Vec<Did>,
     verification_method: Vec<VerificationMethod>,
     authentication: Vec<VerificationMethodAlias>,
     assertion_method: Vec<VerificationMethodAlias>,
@@ -45,6 +47,7 @@ pub struct DIDDocumentBuilder {
     service: Vec<Service>,
 }
 
+#[allow(dead_code)]
 impl DIDDocumentBuilder {
     pub fn new(id: Did) -> Self {
         Self {
@@ -53,118 +56,125 @@ impl DIDDocumentBuilder {
         }
     }
 
-    pub fn set_also_known_as(&mut self, also_known_as: Vec<Uri>) -> &mut Self {
-        self.also_known_as = also_known_as;
+    pub fn add_also_known_as(&mut self, also_known_as: Uri) -> Result<&mut Self, std::io::Error> {
+        self.also_known_as.push(also_known_as);
+        Ok(self)
+    }
+
+    pub fn add_controller(&mut self, controller: Did) -> &mut Self {
+        self.controller.push(controller);
         self
     }
 
-    pub fn set_controller(&mut self, controller: ControllerAlias) -> &mut Self {
-        self.controller = Some(controller);
-        self
-    }
-
-    pub fn set_verification_method(
+    pub fn add_verification_method(
         &mut self,
-        verification_method: Vec<VerificationMethod>,
+        verification_method: VerificationMethod,
     ) -> &mut Self {
-        self.verification_method = verification_method;
+        self.verification_method.push(verification_method);
         self
     }
 
-    pub fn set_authentication(
+    pub fn add_authentication_method(&mut self, method: VerificationMethod) -> &mut Self {
+        self.authentication
+            .push(VerificationMethodAlias::VerificationMethod(method));
+        self
+    }
+
+    pub fn add_authentication_reference(&mut self, reference: DidUrl) -> &mut Self {
+        self.authentication
+            .push(VerificationMethodAlias::VerificationMethodReference(
+                reference,
+            ));
+        self
+    }
+
+    pub fn add_assertion_method(&mut self, method: VerificationMethod) -> &mut Self {
+        self.assertion_method
+            .push(VerificationMethodAlias::VerificationMethod(method));
+        self
+    }
+
+    pub fn add_assertion_method_reference(&mut self, reference: DidUrl) -> &mut Self {
+        self.assertion_method
+            .push(VerificationMethodAlias::VerificationMethodReference(
+                reference,
+            ));
+        self
+    }
+
+    pub fn add_key_agreement(&mut self, key_agreement: VerificationMethod) -> &mut Self {
+        self.key_agreement
+            .push(VerificationMethodAlias::VerificationMethod(key_agreement));
+        self
+    }
+
+    pub fn add_key_agreement_refrence(&mut self, reference: DidUrl) -> &mut Self {
+        self.key_agreement
+            .push(VerificationMethodAlias::VerificationMethodReference(
+                reference,
+            ));
+        self
+    }
+
+    pub fn add_capability_invocation(
         &mut self,
-        authentication: Vec<VerificationMethodAlias>,
+        capability_invocation: VerificationMethod,
     ) -> &mut Self {
-        self.authentication = authentication;
+        self.capability_invocation
+            .push(VerificationMethodAlias::VerificationMethod(
+                capability_invocation,
+            ));
         self
     }
 
-    pub fn set_assertion_method(
+    pub fn add_capability_invocation_refrence(&mut self, reference: DidUrl) -> &mut Self {
+        self.capability_invocation
+            .push(VerificationMethodAlias::VerificationMethodReference(
+                reference,
+            ));
+        self
+    }
+
+    pub fn add_capability_delegation(
         &mut self,
-        assertion_method: Vec<VerificationMethodAlias>,
+        capability_delegation: VerificationMethod,
     ) -> &mut Self {
-        self.assertion_method = assertion_method;
+        self.capability_delegation
+            .push(VerificationMethodAlias::VerificationMethod(
+                capability_delegation,
+            ));
         self
     }
 
-    pub fn set_key_agreement(&mut self, key_agreement: Vec<VerificationMethodAlias>) -> &mut Self {
-        self.key_agreement = key_agreement;
+    pub fn add_capability_delegation_refrence(&mut self, reference: DidUrl) -> &mut Self {
+        self.capability_delegation
+            .push(VerificationMethodAlias::VerificationMethodReference(
+                reference,
+            ));
         self
     }
 
-    pub fn set_capability_invocation(
-        &mut self,
-        capability_invocation: Vec<VerificationMethodAlias>,
-    ) -> &mut Self {
-        self.capability_invocation = capability_invocation;
+    pub fn add_service(&mut self, service: Service) -> &mut Self {
+        self.service.push(service);
         self
     }
 
-    pub fn set_capability_delegation(
-        &mut self,
-        capability_delegation: Vec<VerificationMethodAlias>,
-    ) -> &mut Self {
-        self.capability_delegation = capability_delegation;
-        self
-    }
-
-    pub fn set_service(&mut self, service: Vec<Service>) -> &mut Self {
-        self.service = service;
-        self
-    }
-
-    pub fn id(&self) -> &Did {
-        &self.id
-    }
-
-    pub fn also_known_as(&self) -> &[Uri] {
-        self.also_known_as.as_ref()
-    }
-
-    pub fn controller(&self) -> Option<&ControllerAlias> {
-        self.controller.as_ref()
-    }
-
-    pub fn verification_method(&self) -> &[VerificationMethod] {
-        self.verification_method.as_ref()
-    }
-
-    pub fn authentication(&self) -> &[VerificationMethodAlias] {
-        self.authentication.as_ref()
-    }
-
-    pub fn assertion_method(&self) -> &[VerificationMethodAlias] {
-        self.assertion_method.as_ref()
-    }
-
-    pub fn key_agreement(&self) -> &[VerificationMethodAlias] {
-        self.key_agreement.as_ref()
-    }
-
-    pub fn capability_invocation(&self) -> &[VerificationMethodAlias] {
-        self.capability_invocation.as_ref()
-    }
-
-    pub fn capability_delegation(&self) -> &[VerificationMethodAlias] {
-        self.capability_delegation.as_ref()
-    }
-
-    pub fn service(&self) -> &[Service] {
-        self.service.as_ref()
-    }
-
-    pub fn build(&self) -> DIDDocument {
+    pub fn build(self) -> DIDDocument {
         DIDDocument {
-            id: self.id.clone(),
-            also_known_as: self.also_known_as.clone(),
-            controller: self.controller.clone(),
-            verification_method: self.verification_method.clone(),
-            authentication: self.authentication.clone(),
-            assertion_method: self.assertion_method.clone(),
-            key_agreement: self.key_agreement.clone(),
-            capability_invocation: self.capability_invocation.clone(),
-            capability_delegation: self.capability_delegation.clone(),
-            service: self.service.clone(),
+            id: self.id,
+            also_known_as: self.also_known_as,
+            controller: if self.controller.is_empty() {
+                None
+            } else {
+                Some(OneOrList::List(self.controller))
+            },
+            verification_method: self.verification_method,
+            authentication: self.authentication,
+            assertion_method: self.assertion_method,
+            key_agreement: self.key_agreement,
+            capability_invocation: self.capability_invocation,
+            capability_delegation: self.capability_delegation,
+            service: self.service,
         }
     }
 }
