@@ -33,6 +33,48 @@ pub struct DIDDocument {
     service: Vec<Service>,
 }
 
+impl DIDDocument {
+    pub fn id(&self) -> &Did {
+        &self.id
+    }
+
+    pub fn also_known_as(&self) -> &[Uri] {
+        self.also_known_as.as_ref()
+    }
+
+    pub fn controller(&self) -> Option<&OneOrList<Did>> {
+        self.controller.as_ref()
+    }
+
+    pub fn verification_method(&self) -> &[VerificationMethod] {
+        self.verification_method.as_ref()
+    }
+
+    pub fn authentication(&self) -> &[VerificationMethodAlias] {
+        self.authentication.as_ref()
+    }
+
+    pub fn assertion_method(&self) -> &[VerificationMethodAlias] {
+        self.assertion_method.as_ref()
+    }
+
+    pub fn key_agreement(&self) -> &[VerificationMethodAlias] {
+        self.key_agreement.as_ref()
+    }
+
+    pub fn capability_invocation(&self) -> &[VerificationMethodAlias] {
+        self.capability_invocation.as_ref()
+    }
+
+    pub fn capability_delegation(&self) -> &[VerificationMethodAlias] {
+        self.capability_delegation.as_ref()
+    }
+
+    pub fn service(&self) -> &[Service] {
+        self.service.as_ref()
+    }
+}
+
 #[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct DIDDocumentBuilder {

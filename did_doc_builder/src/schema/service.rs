@@ -15,6 +15,20 @@ pub struct Service {
     service_endpoint: String,
 }
 
+impl Service {
+    pub fn id(&self) -> &Uri {
+        &self.id
+    }
+
+    pub fn r#type(&self) -> &ServiceTypeAlias {
+        &self.r#type
+    }
+
+    pub fn service_endpoint(&self) -> &str {
+        self.service_endpoint.as_ref()
+    }
+}
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct ServiceBuilder {

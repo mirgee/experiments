@@ -5,7 +5,7 @@ use super::types::{did::Did, did_url::DidUrl};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
-pub(crate) enum VerificationMethodAlias {
+pub enum VerificationMethodAlias {
     VerificationMethod(VerificationMethod),
     VerificationMethodReference(DidUrl),
 }
@@ -18,6 +18,28 @@ pub struct VerificationMethod {
     r#type: String,
     public_key_multibase: Option<String>,
     public_key_jwk: Option<JsonWebKey>,
+}
+
+impl VerificationMethod {
+    pub fn id(&self) -> &Did {
+        &self.id
+    }
+
+    pub fn controller(&self) -> &Did {
+        &self.controller
+    }
+
+    pub fn r#type(&self) -> &str {
+        self.r#type.as_ref()
+    }
+
+    pub fn public_key_multibase(&self) -> Option<&String> {
+        self.public_key_multibase.as_ref()
+    }
+
+    pub fn public_key_jwk(&self) -> Option<&JsonWebKey> {
+        self.public_key_jwk.as_ref()
+    }
 }
 
 #[derive(Debug, Default)]

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
@@ -33,6 +35,14 @@ impl<'de> Deserialize<'de> for Did {
                 &"a valid DID",
             ))
         }
+    }
+}
+
+impl FromStr for Did {
+    type Err = DIDDocumentBuilderError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s.to_string())
     }
 }
 
