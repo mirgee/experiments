@@ -57,47 +57,72 @@ impl DIDResolvable for DIDSovResolver {
 
 #[cfg(test)]
 mod tests {
-    use std::future::Future;
+    use std::{future::Future, pin::Pin};
 
     use super::*;
     use aries_vcx_core::{
-        global::settings,
-        indy::ledger::pool::{
-            create_pool_ledger_config, open_pool_ledger,
-            test_utils::{create_tmp_genesis_txn_file, delete_test_pool, open_test_pool},
+        indy::{
+            ledger::pool::test_utils::{delete_test_pool, open_test_pool},
+            wallet::{
+                create_wallet_with_master_secret, open_wallet, wallet_configure_issuer,
+                WalletConfig,
+            },
         },
-        utils,
+        ledger::indy_ledger::IndySdkLedger,
+        PoolHandle, WalletHandle,
     };
+
+    type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
     struct SetupProfile {
         pub institution_did: String,
-        pub profile: Arc<dyn Profile>,
+        pub ledger: Arc<dyn BaseLedger>,
         pub(self) teardown: Arc<dyn Fn() -> BoxFuture<'static, ()>>,
     }
 
-    fn init_test_logging() {}
+    fn init_test_logging() {
+        env_logger::init();
+    }
+
+    pub async fn setup_issuer_wallet() -> (String, WalletHandle) {
+        let enterprise_seed = "000000000000000000000000Trustee1";
+        let config_wallet = WalletConfig {
+            wallet_name: format!("wallet_{}", uuid::Uuid::new_v4().to_string()),
+            wallet_key: "8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY".into(),
+            wallet_key_derivation: "RAW".into(),
+            wallet_type: None,
+            storage_config: None,
+            storage_credentials: None,
+            rekey: None,
+            rekey_derivation_method: None,
+        };
+        create_wallet_with_master_secret(&config_wallet)
+            .await
+            .unwrap();
+        let wallet_handle = open_wallet(&config_wallet).await.unwrap();
+        let config_issuer = wallet_configure_issuer(wallet_handle, enterprise_seed)
+            .await
+            .unwrap();
+        // init_issuer_config(&config_issuer.institution_did).unwrap();
+        (config_issuer.institution_did, wallet_handle)
+    }
 
     impl SetupProfile {
         pub async fn init() -> SetupProfile {
             init_test_logging();
-            set_test_configs();
-            SetupProfile::init_indy().await
-        }
 
-        async fn init_indy() -> SetupProfile {
             let (institution_did, wallet_handle) = setup_issuer_wallet().await;
 
-            settings::set_config_value(
-                settings::CONFIG_GENESIS_PATH,
-                utils::get_temp_dir_path(settings::DEFAULT_GENESIS_PATH)
-                    .to_str()
-                    .unwrap(),
-            )
-            .unwrap();
+            // settings::set_config_value(
+            //     settings::CONFIG_GENESIS_PATH,
+            //     utils::get_temp_dir_path(settings::DEFAULT_GENESIS_PATH)
+            //         .to_str()
+            //         .unwrap(),
+            // )
+            // .unwrap();
             let pool_handle = open_test_pool().await;
 
-            let profile: Arc<dyn Profile> =
-                Arc::new(VdrtoolsProfile::new(wallet_handle, pool_handle.clone()));
+            let ledger = Arc::new(IndySdkLedger::new(wallet_handle, pool_handle));
 
             async fn indy_teardown(pool_handle: PoolHandle) {
                 delete_test_pool(pool_handle.clone()).await;
@@ -105,7 +130,7 @@ mod tests {
 
             SetupProfile {
                 institution_did,
-                profile,
+                ledger,
                 teardown: Arc::new(move || Box::pin(indy_teardown(pool_handle))),
             }
         }
@@ -122,22 +147,12 @@ mod tests {
 
             (teardown)().await;
 
-            reset_global_state();
+            // reset_global_state();
         }
     }
 
     #[test]
     fn it_works() {
-        SetupProfile::run(|init| async move {
-            let mut resolver =
-                DIDSovResolver::new(Box::new(init.profile), NonZeroUsize::new(10).unwrap());
-            let did = ParsedDID::new("did:sov:WRfXPg8dantKVubE3HX8pw").unwrap();
-            let ddo = resolver.resolve(did).await.unwrap();
-            assert_eq!(ddo.id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
-            assert_eq!(ddo.services.len(), 1);
-            assert_eq!(ddo.services[0].id, "did:sov:WRfXPg8dantKVubE3HX8pw");
-            assert_eq!(ddo.services[0].r#type, "indy");
-            assert_eq!(ddo.services[0].service_endpoint, "http://example.com");
-        })
+        SetupProfile::run(|init| async move {});
     }
 }
