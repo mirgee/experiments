@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
@@ -38,4 +40,63 @@ impl<'de> Deserialize<'de> for DidUrl {
 
 fn is_valid_did_url(did: &str) -> bool {
     did.starts_with("did:")
+}
+
+impl FromStr for DidUrl {
+    type Err = DIDDocumentBuilderError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_did_url_new_valid() {
+        let did_url = DidUrl::new("did:example:123456789abcdefghi#key-1".to_string());
+        assert!(did_url.is_ok());
+    }
+
+    #[test]
+    fn test_did_url_new_invalid() {
+        let did_url = DidUrl::new("invalid:example:123456789abcdefghi#key-1".to_string());
+        assert!(did_url.is_err());
+    }
+
+    #[test]
+    fn test_did_url_deserialize_valid() {
+        let did_url_str = "\"did:example:123456789abcdefghi#key-1\"";
+        let did_url: Result<DidUrl, _> = serde_json::from_str(did_url_str);
+        assert!(did_url.is_ok());
+    }
+
+    #[test]
+    fn test_did_url_deserialize_invalid() {
+        let did_url_str = "\"invalid:example:123456789abcdefghi#key-1\"";
+        let did_url: Result<DidUrl, _> = serde_json::from_str(did_url_str);
+        assert!(did_url.is_err());
+    }
+
+    #[test]
+    fn test_did_url_from_str_valid() {
+        let did_url = DidUrl::from_str("did:example:123456789abcdefghi#key-1");
+        assert!(did_url.is_ok());
+    }
+
+    #[test]
+    fn test_did_url_from_str_invalid() {
+        let did_url = DidUrl::from_str("invalid:example:123456789abcdefghi#key-1");
+        assert!(did_url.is_err());
+    }
+
+    #[test]
+    fn test_is_valid_did_url() {
+        assert!(is_valid_did_url("did:example:123456789abcdefghi#key-1"));
+        assert!(!is_valid_did_url(
+            "invalid:example:123456789abcdefghi#key-1"
+        ));
+    }
 }

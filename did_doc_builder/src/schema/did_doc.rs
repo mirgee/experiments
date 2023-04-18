@@ -100,31 +100,28 @@ impl DIDDocumentBuilder {
         }
     }
 
-    pub fn add_also_known_as(&mut self, also_known_as: Uri) -> &mut Self {
+    pub fn add_also_known_as(mut self, also_known_as: Uri) -> Self {
         self.also_known_as.push(also_known_as);
         self
     }
 
-    pub fn add_controller(&mut self, controller: Did) -> &mut Self {
+    pub fn add_controller(mut self, controller: Did) -> Self {
         self.controller.push(controller);
         self
     }
 
-    pub fn add_verification_method(
-        &mut self,
-        verification_method: VerificationMethod,
-    ) -> &mut Self {
+    pub fn add_verification_method(mut self, verification_method: VerificationMethod) -> Self {
         self.verification_method.push(verification_method);
         self
     }
 
-    pub fn add_authentication_method(&mut self, method: VerificationMethod) -> &mut Self {
+    pub fn add_authentication_method(mut self, method: VerificationMethod) -> Self {
         self.authentication
             .push(VerificationMethodAlias::VerificationMethod(method));
         self
     }
 
-    pub fn add_authentication_reference(&mut self, reference: DidUrl) -> &mut Self {
+    pub fn add_authentication_reference(mut self, reference: DidUrl) -> Self {
         self.authentication
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -132,13 +129,13 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_assertion_method(&mut self, method: VerificationMethod) -> &mut Self {
+    pub fn add_assertion_method(mut self, method: VerificationMethod) -> Self {
         self.assertion_method
             .push(VerificationMethodAlias::VerificationMethod(method));
         self
     }
 
-    pub fn add_assertion_method_reference(&mut self, reference: DidUrl) -> &mut Self {
+    pub fn add_assertion_method_reference(mut self, reference: DidUrl) -> Self {
         self.assertion_method
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -146,13 +143,13 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_key_agreement(&mut self, key_agreement: VerificationMethod) -> &mut Self {
+    pub fn add_key_agreement(mut self, key_agreement: VerificationMethod) -> Self {
         self.key_agreement
             .push(VerificationMethodAlias::VerificationMethod(key_agreement));
         self
     }
 
-    pub fn add_key_agreement_refrence(&mut self, reference: DidUrl) -> &mut Self {
+    pub fn add_key_agreement_refrence(mut self, reference: DidUrl) -> Self {
         self.key_agreement
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -160,10 +157,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_invocation(
-        &mut self,
-        capability_invocation: VerificationMethod,
-    ) -> &mut Self {
+    pub fn add_capability_invocation(mut self, capability_invocation: VerificationMethod) -> Self {
         self.capability_invocation
             .push(VerificationMethodAlias::VerificationMethod(
                 capability_invocation,
@@ -171,7 +165,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_invocation_refrence(&mut self, reference: DidUrl) -> &mut Self {
+    pub fn add_capability_invocation_refrence(mut self, reference: DidUrl) -> Self {
         self.capability_invocation
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -179,10 +173,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_delegation(
-        &mut self,
-        capability_delegation: VerificationMethod,
-    ) -> &mut Self {
+    pub fn add_capability_delegation(mut self, capability_delegation: VerificationMethod) -> Self {
         self.capability_delegation
             .push(VerificationMethodAlias::VerificationMethod(
                 capability_delegation,
@@ -190,7 +181,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_delegation_refrence(&mut self, reference: DidUrl) -> &mut Self {
+    pub fn add_capability_delegation_refrence(mut self, reference: DidUrl) -> Self {
         self.capability_delegation
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -198,7 +189,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_service(&mut self, service: Service) -> &mut Self {
+    pub fn add_service(mut self, service: Service) -> Self {
         self.service.push(service);
         self
     }
@@ -220,5 +211,118 @@ impl DIDDocumentBuilder {
             capability_delegation: self.capability_delegation,
             service: self.service,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        error::DIDDocumentBuilderError,
+        schema::{service::ServiceBuilder, verification_method::VerificationMethodBuilder},
+    };
+
+    #[test]
+    fn test_did_document_builder() -> Result<(), DIDDocumentBuilderError> {
+        let id = Did::new("did:example:123456789abcdefghi".to_string())?;
+        let also_known_as = Uri::new("https://example.com".to_string())?;
+        let controller = Did::new("did:example:controller".to_string())?;
+
+        let verification_method = VerificationMethodBuilder::new(
+            Did::new("did:example:vm1".to_string())?,
+            Did::new("did:example:vm2".to_string())?,
+            "typevm".to_string(),
+        )
+        .build();
+        let authentication_reference = DidUrl::new("did:example:authref".to_string())?;
+        let assertion_method = VerificationMethodBuilder::new(
+            Did::new("did:example:am1".to_string())?,
+            Did::new("did:example:am2".to_string())?,
+            "typeam".to_string(),
+        )
+        .build();
+
+        let service_id = Uri::new("did:example:123456789abcdefghi;service-1".to_string())?;
+        let service_type = "test-service".to_string();
+        let service_endpoint = "https://example.com/service".to_string();
+        let service = ServiceBuilder::new(service_id, service_endpoint)
+            .add_type(service_type)
+            .build()?;
+
+        let document = DIDDocumentBuilder::new(id.clone())
+            .add_also_known_as(also_known_as.clone())
+            .add_controller(controller.clone())
+            .add_verification_method(verification_method.clone())
+            .add_authentication_method(verification_method.clone())
+            .add_authentication_reference(authentication_reference.clone())
+            .add_assertion_method(assertion_method.clone())
+            .add_assertion_method_reference(authentication_reference.clone())
+            .add_key_agreement(verification_method.clone())
+            .add_key_agreement_refrence(authentication_reference.clone())
+            .add_capability_invocation(verification_method.clone())
+            .add_capability_invocation_refrence(authentication_reference.clone())
+            .add_capability_delegation(verification_method.clone())
+            .add_capability_delegation_refrence(authentication_reference.clone())
+            .add_service(service.clone())
+            .build();
+
+        assert_eq!(document.id(), &id);
+        assert_eq!(document.also_known_as(), &[also_known_as]);
+        assert_eq!(
+            document.controller(),
+            Some(&OneOrList::List(vec![controller]))
+        );
+        assert_eq!(
+            document.verification_method(),
+            &[verification_method.clone()]
+        );
+        assert_eq!(
+            document.authentication(),
+            &[
+                VerificationMethodAlias::VerificationMethod(verification_method.clone()),
+                VerificationMethodAlias::VerificationMethodReference(
+                    authentication_reference.clone()
+                )
+            ]
+        );
+        assert_eq!(
+            document.assertion_method(),
+            &[
+                VerificationMethodAlias::VerificationMethod(assertion_method),
+                VerificationMethodAlias::VerificationMethodReference(
+                    authentication_reference.clone()
+                )
+            ]
+        );
+        assert_eq!(
+            document.key_agreement(),
+            &[
+                VerificationMethodAlias::VerificationMethod(verification_method.clone()),
+                VerificationMethodAlias::VerificationMethodReference(
+                    authentication_reference.clone()
+                )
+            ]
+        );
+        assert_eq!(
+            document.capability_invocation(),
+            &[
+                VerificationMethodAlias::VerificationMethod(verification_method.clone()),
+                VerificationMethodAlias::VerificationMethodReference(
+                    authentication_reference.clone()
+                )
+            ]
+        );
+        assert_eq!(
+            document.capability_delegation(),
+            &[
+                VerificationMethodAlias::VerificationMethod(verification_method.clone()),
+                VerificationMethodAlias::VerificationMethodReference(
+                    authentication_reference.clone()
+                )
+            ]
+        );
+        assert_eq!(document.service(), &[service]);
+
+        Ok(())
     }
 }

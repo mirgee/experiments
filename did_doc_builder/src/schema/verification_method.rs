@@ -76,20 +76,17 @@ impl VerificationMethodBuilder {
     }
 
     // We will rely on users to provide valid multibase keys for now
-    pub fn add_public_key_multibase_string(
-        &mut self,
-        public_key_multibase: Multibase,
-    ) -> &mut Self {
+    pub fn add_public_key_multibase_string(mut self, public_key_multibase: Multibase) -> Self {
         self.public_key_multibase = Some(public_key_multibase);
         self
     }
 
-    pub fn add_public_key_jwk(&mut self, public_key_jwk: JsonWebKey) -> &mut Self {
+    pub fn add_public_key_jwk(mut self, public_key_jwk: JsonWebKey) -> Self {
         self.public_key_jwk = Some(public_key_jwk);
         self
     }
 
-    pub fn add_extra(&mut self, key: String, value: Value) -> &mut Self {
+    pub fn add_extra(mut self, key: String, value: Value) -> Self {
         self.extra.insert(key, value);
         self
     }
@@ -103,5 +100,80 @@ impl VerificationMethodBuilder {
             public_key_jwk: self.public_key_jwk,
             extra: self.extra,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_valid_did() -> Did {
+        Did::new("did:example:123456789abcdefghi".to_string()).unwrap()
+    }
+
+    fn create_valid_multibase() -> Multibase {
+        Multibase::new("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".to_string()).unwrap()
+    }
+
+    #[test]
+    fn test_verification_method_id() {
+        let id = create_valid_did();
+        let controller = create_valid_did();
+        let r#type = "Ed25519VerificationKey2018".to_string();
+        let vm =
+            VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone()).build();
+        assert_eq!(vm.id(), &id);
+    }
+
+    #[test]
+    fn test_verification_method_builder() {
+        let id = create_valid_did();
+        let controller = create_valid_did();
+        let r#type = "Ed25519VerificationKey2018".to_string();
+        let public_key_multibase = create_valid_multibase();
+
+        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+            .add_public_key_multibase_string(public_key_multibase.clone())
+            .build();
+
+        assert_eq!(vm.id(), &id);
+        assert_eq!(vm.controller(), &controller);
+        assert_eq!(vm.r#type(), &r#type);
+        assert_eq!(vm.public_key_multibase().unwrap(), &public_key_multibase);
+    }
+
+    #[test]
+    fn test_verification_method_extra() {
+        let id = create_valid_did();
+        let controller = create_valid_did();
+        let r#type = "Ed25519VerificationKey2018".to_string();
+        let extra_key = "foo".to_string();
+        let extra_value = Value::String("bar".to_string());
+
+        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+            .add_extra(extra_key.clone(), extra_value.clone())
+            .build();
+        assert_eq!(vm.extra(&extra_key).unwrap(), &extra_value);
+    }
+
+    #[test]
+    fn test_verification_method_builder_complete() {
+        let id = create_valid_did();
+        let controller = create_valid_did();
+        let r#type = "Ed25519VerificationKey2018".to_string();
+        let public_key_multibase = create_valid_multibase();
+        let extra_key = "foo".to_string();
+        let extra_value = Value::String("bar".to_string());
+
+        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+            .add_public_key_multibase_string(public_key_multibase.clone())
+            .add_extra(extra_key.clone(), extra_value.clone())
+            .build();
+
+        assert_eq!(vm.id(), &id);
+        assert_eq!(vm.controller(), &controller);
+        assert_eq!(vm.r#type(), &r#type);
+        assert_eq!(vm.public_key_multibase().unwrap(), &public_key_multibase);
+        assert_eq!(vm.extra(&extra_key).unwrap(), &extra_value);
     }
 }

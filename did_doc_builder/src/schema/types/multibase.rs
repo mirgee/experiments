@@ -46,3 +46,21 @@ impl FromStr for Multibase {
         Self::new(s.to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_multibase_new_valid() {
+        let multibase =
+            Multibase::new("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".to_string());
+        assert!(multibase.is_ok());
+    }
+
+    #[test]
+    fn test_multibase_new_invalid() {
+        let multibase = Multibase::new("invalidmultibasekey".to_string());
+        assert!(multibase.is_err());
+    }
+}

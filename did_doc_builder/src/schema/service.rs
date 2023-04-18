@@ -58,12 +58,12 @@ impl ServiceBuilder {
         }
     }
 
-    pub fn add_type(&mut self, r#type: String) -> &mut Self {
+    pub fn add_type(mut self, r#type: String) -> Self {
         self.r#type.push(r#type);
         self
     }
 
-    pub fn add_extra(&mut self, key: String, value: Value) -> &mut Self {
+    pub fn add_extra(mut self, key: String, value: Value) -> Self {
         self.extra.insert(key, value);
         self
     }
@@ -79,5 +79,58 @@ impl ServiceBuilder {
                 extra: self.extra,
             })
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_valid_uri() -> Uri {
+        Uri::new("http://example.com".to_string()).unwrap()
+    }
+
+    #[test]
+    fn test_service_builder_basic() {
+        let id = create_valid_uri();
+        let service_endpoint = "http://example.com/endpoint".to_string();
+        let r#type = "DIDCommMessaging".to_string();
+
+        let service = ServiceBuilder::new(id.clone(), service_endpoint.clone())
+            .add_type(r#type.clone())
+            .build()
+            .unwrap();
+
+        assert_eq!(service.id(), &id);
+        assert_eq!(service.service_endpoint(), &service_endpoint);
+        assert_eq!(service.r#type(), &OneOrList::List(vec![r#type]));
+    }
+
+    #[test]
+    fn test_service_builder_add_extra() {
+        let id = create_valid_uri();
+        let service_endpoint = "http://example.com/endpoint".to_string();
+        let r#type = "DIDCommMessaging".to_string();
+        let extra_key = "foo".to_string();
+        let extra_value = Value::String("bar".to_string());
+
+        let service = ServiceBuilder::new(id.clone(), service_endpoint.clone())
+            .add_type(r#type.clone())
+            .add_extra(extra_key.clone(), extra_value.clone())
+            .build()
+            .unwrap();
+
+        assert_eq!(service.extra(&extra_key).unwrap(), &extra_value);
+    }
+
+    #[test]
+    fn test_service_builder_missing_type() {
+        let id = create_valid_uri();
+        let service_endpoint = "http://example.com/endpoint".to_string();
+
+        let service_builder = ServiceBuilder::new(id.clone(), service_endpoint.clone());
+        let service = service_builder.build();
+
+        assert!(service.is_err());
     }
 }
