@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{error::DIDDocumentBuilderError, uri::Uri, utils::OneOrList};
+use crate::error::DIDDocumentBuilderError;
 
-pub type ServiceTypeAlias = OneOrList<String>;
+use super::{types::uri::Uri, utils::OneOrList};
+
+type ServiceTypeAlias = OneOrList<String>;
 
 // TODO: It seems that this may contain pretty much anything?
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

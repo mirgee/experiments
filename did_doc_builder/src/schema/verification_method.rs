@@ -1,11 +1,11 @@
-use crate::did::Did;
-use crate::did_url::DidUrl;
 use jsonwebkey::JsonWebKey;
 use serde::{Deserialize, Serialize};
 
+use super::types::{did::Did, did_url::DidUrl};
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
-pub enum VerificationMethodAlias {
+pub(crate) enum VerificationMethodAlias {
     VerificationMethod(VerificationMethod),
     VerificationMethodReference(DidUrl),
 }

@@ -1,12 +1,13 @@
-use crate::did_url::DidUrl;
-use crate::service::Service;
-use crate::uri::Uri;
-use crate::utils::OneOrList;
-use crate::verification_method::VerificationMethod;
-use crate::{did::Did, verification_method::VerificationMethodAlias};
 use serde::{Deserialize, Serialize};
 
-pub type ControllerAlias = OneOrList<Did>;
+use super::{
+    service::Service,
+    types::{did::Did, did_url::DidUrl, uri::Uri},
+    utils::OneOrList,
+    verification_method::{VerificationMethod, VerificationMethodAlias},
+};
+
+type ControllerAlias = OneOrList<Did>;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
