@@ -1,10 +1,12 @@
 use serde::{de, Deserialize, Deserializer, Serialize};
 
+use crate::error::DIDDocumentBuilderError;
+
 #[derive(Serialize, Clone, Debug, PartialEq, Default)]
 pub struct DidUrl(String);
 
 impl DidUrl {
-    pub fn new(did_url: String) -> Self {
+    pub fn new(did_url: String) -> Result<Self, DIDDocumentBuilderError> {
         todo!()
     }
 }

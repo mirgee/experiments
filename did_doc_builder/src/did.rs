@@ -1,17 +1,16 @@
 use serde::{de, Deserialize, Deserializer, Serialize};
 
+use crate::error::DIDDocumentBuilderError;
+
 #[derive(Serialize, Clone, Debug, PartialEq, Default)]
 pub struct Did(String);
 
 impl Did {
-    pub fn new(did: String) -> Result<Self, std::io::Error> {
+    pub fn new(did: String) -> Result<Self, DIDDocumentBuilderError> {
         if is_valid_did(&did) {
             Ok(Self(did))
         } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                format!("Invalid DID: {did}"),
-            ))
+            Err(DIDDocumentBuilderError::InvalidInput(did))
         }
     }
 }

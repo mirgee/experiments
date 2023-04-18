@@ -13,7 +13,7 @@ pub enum VerificationMethodAlias {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct VerificationMethod {
-    id: String,
+    id: Did,
     r#type: String,
     controller: Did,
     public_key_multibase: Option<String>, // TODO: Must be a valid multibase key

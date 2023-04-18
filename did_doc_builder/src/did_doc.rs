@@ -56,9 +56,9 @@ impl DIDDocumentBuilder {
         }
     }
 
-    pub fn add_also_known_as(&mut self, also_known_as: Uri) -> Result<&mut Self, std::io::Error> {
+    pub fn add_also_known_as(&mut self, also_known_as: Uri) -> &mut Self {
         self.also_known_as.push(also_known_as);
-        Ok(self)
+        self
     }
 
     pub fn add_controller(&mut self, controller: Did) -> &mut Self {
