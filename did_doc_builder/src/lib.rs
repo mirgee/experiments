@@ -12,4 +12,6 @@ pub(crate) mod verification_method;
 
 // TODO: Adjust visibility appropriately
 pub use did_doc::DIDDocument;
+// TODO: Consider either removing add_public_key_jwk or exposing a facade over jsonwebkey
+pub use jsonwebkey;
 pub use uri::Uri;

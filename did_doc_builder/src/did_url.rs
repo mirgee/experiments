@@ -7,7 +7,14 @@ pub struct DidUrl(String);
 
 impl DidUrl {
     pub fn new(did_url: String) -> Result<Self, DIDDocumentBuilderError> {
-        todo!()
+        if is_valid_did_url(&did_url) {
+            Ok(Self(did_url))
+        } else {
+            Err(DIDDocumentBuilderError::InvalidInput(format!(
+                "Invalid DID URL: {}",
+                did_url
+            )))
+        }
     }
 }
 

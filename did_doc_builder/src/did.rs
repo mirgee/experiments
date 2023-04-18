@@ -10,7 +10,10 @@ impl Did {
         if is_valid_did(&did) {
             Ok(Self(did))
         } else {
-            Err(DIDDocumentBuilderError::InvalidInput(did))
+            Err(DIDDocumentBuilderError::InvalidInput(format!(
+                "Invalid DID: {}",
+                did
+            )))
         }
     }
 }
