@@ -1,7 +1,7 @@
 use jsonwebkey::JsonWebKey;
 use serde::{Deserialize, Serialize};
 
-use super::types::{did::Did, did_url::DidUrl};
+use super::types::{did::Did, did_url::DidUrl, multibase::Multibase};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
@@ -16,7 +16,7 @@ pub struct VerificationMethod {
     id: Did,
     controller: Did,
     r#type: String,
-    public_key_multibase: Option<String>,
+    public_key_multibase: Option<Multibase>,
     public_key_jwk: Option<JsonWebKey>,
 }
 
@@ -33,7 +33,7 @@ impl VerificationMethod {
         self.r#type.as_ref()
     }
 
-    pub fn public_key_multibase(&self) -> Option<&String> {
+    pub fn public_key_multibase(&self) -> Option<&Multibase> {
         self.public_key_multibase.as_ref()
     }
 
@@ -48,7 +48,7 @@ pub struct VerificationMethodBuilder {
     id: Did,
     controller: Did,
     r#type: String,
-    public_key_multibase: Option<String>, // TODO: Multibase key validation
+    public_key_multibase: Option<Multibase>, // TODO: Multibase key validation
     public_key_jwk: Option<JsonWebKey>,
 }
 
@@ -64,7 +64,10 @@ impl VerificationMethodBuilder {
     }
 
     // We will rely on users to provide valid multibase keys for now
-    pub fn add_public_key_multibase_string(&mut self, public_key_multibase: String) -> &mut Self {
+    pub fn add_public_key_multibase_string(
+        &mut self,
+        public_key_multibase: Multibase,
+    ) -> &mut Self {
         self.public_key_multibase = Some(public_key_multibase);
         self
     }
