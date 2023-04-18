@@ -4,7 +4,7 @@ use crate::{
     error::{DIDResolverError, GenericError},
     resolvable::DIDResolvable,
 };
-use did_doc_builder::DIDDocument;
+use did_doc_builder::schema::did_doc::DIDDocument;
 use did_parser::ParsedDID;
 
 pub struct ResolverRegistry {

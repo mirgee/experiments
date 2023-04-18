@@ -3,14 +3,17 @@ pub mod error;
 use aries_vcx_core::ledger::base_ledger::BaseLedger;
 
 use did_resolver::{
-    did_doc_builder::{DIDDocument, Service},
+    did_doc_builder::schema::{
+        did_doc::{DIDDocument, DIDDocumentBuilder},
+        service::ServiceBuilder,
+        types::{did::Did, uri::Uri},
+    },
     did_parser::ParsedDID,
     error::GenericError,
     resolvable::DIDResolvable,
 };
-use error::DIDSovError;
+use std::num::NonZeroUsize;
 use std::sync::Arc;
-use std::{error::Error, num::NonZeroUsize};
 
 use async_trait::async_trait;
 use lru::LruCache;
@@ -36,11 +39,17 @@ impl DIDResolvable for DIDSovResolver {
             return Ok((**ddo).clone());
         }
         let service_endpoint = self.ledger.get_attr(did.did(), "service").await?;
-        let ddo = Arc::new(DIDDocument::new(did.did()).add_service(Service {
-            id: did.did().to_string(),
-            r#type: "indy".to_string(),
-            service_endpoint,
-        }));
+        let service_id = Uri::new(did.did().to_string())?;
+        let ddo_did = Did::new(did.did().to_string())?;
+        let ddo = Arc::new(
+            DIDDocumentBuilder::new(ddo_did)
+                .add_service(
+                    ServiceBuilder::new(service_id, service_endpoint)
+                        .add_type("endpoint".to_string())
+                        .build()?,
+                )
+                .build(),
+        );
         self.cache.put(did.did().to_string(), ddo.clone());
         Ok((*ddo).clone())
     }
@@ -48,10 +57,16 @@ impl DIDResolvable for DIDSovResolver {
 
 #[cfg(test)]
 mod tests {
+    use std::future::Future;
+
     use super::*;
-    use aries_vcx_core::indy::ledger::pool::{
-        create_pool_ledger_config, open_pool_ledger,
-        test_utils::{create_tmp_genesis_txn_file, delete_test_pool, open_test_pool},
+    use aries_vcx_core::{
+        global::settings,
+        indy::ledger::pool::{
+            create_pool_ledger_config, open_pool_ledger,
+            test_utils::{create_tmp_genesis_txn_file, delete_test_pool, open_test_pool},
+        },
+        utils,
     };
 
     struct SetupProfile {
@@ -112,5 +127,17 @@ mod tests {
     }
 
     #[test]
-    fn it_works() {}
+    fn it_works() {
+        SetupProfile::run(|init| async move {
+            let mut resolver =
+                DIDSovResolver::new(Box::new(init.profile), NonZeroUsize::new(10).unwrap());
+            let did = ParsedDID::new("did:sov:WRfXPg8dantKVubE3HX8pw").unwrap();
+            let ddo = resolver.resolve(did).await.unwrap();
+            assert_eq!(ddo.id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
+            assert_eq!(ddo.services.len(), 1);
+            assert_eq!(ddo.services[0].id, "did:sov:WRfXPg8dantKVubE3HX8pw");
+            assert_eq!(ddo.services[0].r#type, "indy");
+            assert_eq!(ddo.services[0].service_endpoint, "http://example.com");
+        })
+    }
 }

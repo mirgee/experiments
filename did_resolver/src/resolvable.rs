@@ -1,6 +1,6 @@
 use crate::error::GenericError;
 use async_trait::async_trait;
-use did_doc_builder::DIDDocument;
+use did_doc_builder::schema::did_doc::DIDDocument;
 use did_parser::ParsedDID;
 
 #[async_trait]
