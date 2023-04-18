@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::{
     service::Service,
@@ -32,6 +35,10 @@ pub struct DIDDocument {
     capability_delegation: Vec<VerificationMethodAlias>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     service: Vec<Service>,
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(flatten)]
+    #[serde(default)]
+    extra: HashMap<String, Value>,
 }
 
 impl DIDDocument {
@@ -74,6 +81,10 @@ impl DIDDocument {
     pub fn service(&self) -> &[Service] {
         self.service.as_ref()
     }
+
+    pub fn extra(&self, key: &str) -> Option<&Value> {
+        self.extra.get(key)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -89,6 +100,7 @@ pub struct DIDDocumentBuilder {
     capability_invocation: Vec<VerificationMethodAlias>,
     capability_delegation: Vec<VerificationMethodAlias>,
     service: Vec<Service>,
+    extra: HashMap<String, Value>,
 }
 
 #[allow(dead_code)]
@@ -194,6 +206,11 @@ impl DIDDocumentBuilder {
         self
     }
 
+    pub fn add_extra(mut self, key: String, value: Value) -> Self {
+        self.extra.insert(key, value);
+        self
+    }
+
     pub fn build(self) -> DIDDocument {
         DIDDocument {
             id: self.id,
@@ -210,6 +227,7 @@ impl DIDDocumentBuilder {
             capability_invocation: self.capability_invocation,
             capability_delegation: self.capability_delegation,
             service: self.service,
+            extra: self.extra,
         }
     }
 }
@@ -229,14 +247,14 @@ mod tests {
         let controller = Did::new("did:example:controller".to_string())?;
 
         let verification_method = VerificationMethodBuilder::new(
-            Did::new("did:example:vm1".to_string())?,
+            DidUrl::new("did:example:vm1".to_string())?,
             Did::new("did:example:vm2".to_string())?,
             "typevm".to_string(),
         )
         .build();
         let authentication_reference = DidUrl::new("did:example:authref".to_string())?;
         let assertion_method = VerificationMethodBuilder::new(
-            Did::new("did:example:am1".to_string())?,
+            DidUrl::new("did:example:am1".to_string())?,
             Did::new("did:example:am2".to_string())?,
             "typeam".to_string(),
         )

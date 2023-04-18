@@ -47,7 +47,7 @@ impl FromStr for Did {
 }
 
 fn is_valid_did(did: &str) -> bool {
-    // TODO
+    // TODO: This is just dummy "validation"
     did.starts_with("did:")
 }
 

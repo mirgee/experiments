@@ -39,7 +39,12 @@ impl<'de> Deserialize<'de> for DidUrl {
 }
 
 fn is_valid_did_url(did: &str) -> bool {
+    // TODO: This is just dummy "validation"
     did.starts_with("did:")
+        || did.starts_with("/")
+        || did.starts_with("#")
+        || did.starts_with("?")
+        || did.starts_with(";")
 }
 
 impl FromStr for DidUrl {

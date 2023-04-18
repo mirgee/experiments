@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
-use jsonwebkey::JsonWebKey;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::types::{did::Did, did_url::DidUrl, multibase::Multibase};
+use super::types::{did::Did, did_url::DidUrl, jsonwebkey::JsonWebKey, multibase::Multibase};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
@@ -16,7 +15,7 @@ pub enum VerificationMethodAlias {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct VerificationMethod {
-    id: Did,
+    id: DidUrl,
     controller: Did,
     r#type: String,
     public_key_multibase: Option<Multibase>,
@@ -28,7 +27,7 @@ pub struct VerificationMethod {
 }
 
 impl VerificationMethod {
-    pub fn id(&self) -> &Did {
+    pub fn id(&self) -> &DidUrl {
         &self.id
     }
 
@@ -56,7 +55,7 @@ impl VerificationMethod {
 #[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct VerificationMethodBuilder {
-    id: Did,
+    id: DidUrl,
     controller: Did,
     r#type: String,
     public_key_multibase: Option<Multibase>,
@@ -66,7 +65,7 @@ pub struct VerificationMethodBuilder {
 
 #[allow(dead_code)]
 impl VerificationMethodBuilder {
-    pub fn new(id: Did, controller: Did, r#type: String) -> Self {
+    pub fn new(id: DidUrl, controller: Did, r#type: String) -> Self {
         Self {
             id,
             r#type,
@@ -76,7 +75,7 @@ impl VerificationMethodBuilder {
     }
 
     // We will rely on users to provide valid multibase keys for now
-    pub fn add_public_key_multibase_string(mut self, public_key_multibase: Multibase) -> Self {
+    pub fn add_public_key_multibase(mut self, public_key_multibase: Multibase) -> Self {
         self.public_key_multibase = Some(public_key_multibase);
         self
     }
@@ -111,13 +110,16 @@ mod tests {
         Did::new("did:example:123456789abcdefghi".to_string()).unwrap()
     }
 
+    fn create_valid_did_url() -> DidUrl {
+        DidUrl::new("did:example:123456789abcdefghi#fragment".to_string()).unwrap()
+    }
     fn create_valid_multibase() -> Multibase {
         Multibase::new("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".to_string()).unwrap()
     }
 
     #[test]
     fn test_verification_method_id() {
-        let id = create_valid_did();
+        let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = "Ed25519VerificationKey2018".to_string();
         let vm =
@@ -127,13 +129,13 @@ mod tests {
 
     #[test]
     fn test_verification_method_builder() {
-        let id = create_valid_did();
+        let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = "Ed25519VerificationKey2018".to_string();
         let public_key_multibase = create_valid_multibase();
 
         let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
-            .add_public_key_multibase_string(public_key_multibase.clone())
+            .add_public_key_multibase(public_key_multibase.clone())
             .build();
 
         assert_eq!(vm.id(), &id);
@@ -144,7 +146,7 @@ mod tests {
 
     #[test]
     fn test_verification_method_extra() {
-        let id = create_valid_did();
+        let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = "Ed25519VerificationKey2018".to_string();
         let extra_key = "foo".to_string();
@@ -158,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_verification_method_builder_complete() {
-        let id = create_valid_did();
+        let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = "Ed25519VerificationKey2018".to_string();
         let public_key_multibase = create_valid_multibase();
@@ -166,7 +168,7 @@ mod tests {
         let extra_value = Value::String("bar".to_string());
 
         let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
-            .add_public_key_multibase_string(public_key_multibase.clone())
+            .add_public_key_multibase(public_key_multibase.clone())
             .add_extra(extra_key.clone(), extra_value.clone())
             .build();
 
