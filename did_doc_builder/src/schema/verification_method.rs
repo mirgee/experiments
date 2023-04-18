@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use jsonwebkey::JsonWebKey;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::types::{did::Did, did_url::DidUrl, multibase::Multibase};
 
@@ -18,6 +21,10 @@ pub struct VerificationMethod {
     r#type: String,
     public_key_multibase: Option<Multibase>,
     public_key_jwk: Option<JsonWebKey>,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
+    extra: HashMap<String, Value>,
 }
 
 impl VerificationMethod {
@@ -40,6 +47,10 @@ impl VerificationMethod {
     pub fn public_key_jwk(&self) -> Option<&JsonWebKey> {
         self.public_key_jwk.as_ref()
     }
+
+    pub fn extra(&self, key: &str) -> Option<&Value> {
+        self.extra.get(key)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -48,8 +59,9 @@ pub struct VerificationMethodBuilder {
     id: Did,
     controller: Did,
     r#type: String,
-    public_key_multibase: Option<Multibase>, // TODO: Multibase key validation
+    public_key_multibase: Option<Multibase>,
     public_key_jwk: Option<JsonWebKey>,
+    extra: HashMap<String, Value>,
 }
 
 #[allow(dead_code)]
@@ -77,6 +89,11 @@ impl VerificationMethodBuilder {
         self
     }
 
+    pub fn add_extra(&mut self, key: String, value: Value) -> &mut Self {
+        self.extra.insert(key, value);
+        self
+    }
+
     pub fn build(self) -> VerificationMethod {
         VerificationMethod {
             id: self.id,
@@ -84,6 +101,7 @@ impl VerificationMethodBuilder {
             controller: self.controller,
             public_key_multibase: self.public_key_multibase,
             public_key_jwk: self.public_key_jwk,
+            extra: self.extra,
         }
     }
 }

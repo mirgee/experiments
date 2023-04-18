@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Uri(uniresid::Uri);
 
 impl Uri {

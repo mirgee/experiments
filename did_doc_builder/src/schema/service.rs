@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::error::DIDDocumentBuilderError;
 
@@ -6,13 +9,16 @@ use super::{types::uri::Uri, utils::OneOrList};
 
 type ServiceTypeAlias = OneOrList<String>;
 
-// TODO: It seems that this may contain pretty much anything?
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Service {
     id: Uri,
     r#type: ServiceTypeAlias,
     service_endpoint: String,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
+    extra: HashMap<String, Value>,
 }
 
 impl Service {
@@ -27,14 +33,19 @@ impl Service {
     pub fn service_endpoint(&self) -> &str {
         self.service_endpoint.as_ref()
     }
+
+    pub fn extra(&self, key: &str) -> Option<&Value> {
+        self.extra.get(key)
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct ServiceBuilder {
     id: Uri,
     r#type: Vec<String>,
     service_endpoint: String,
+    extra: HashMap<String, Value>,
 }
 
 #[allow(dead_code)]
@@ -43,12 +54,17 @@ impl ServiceBuilder {
         Self {
             id,
             service_endpoint,
-            r#type: Vec::new(),
+            ..Default::default()
         }
     }
 
     pub fn add_type(&mut self, r#type: String) -> &mut Self {
         self.r#type.push(r#type);
+        self
+    }
+
+    pub fn add_extra(&mut self, key: String, value: Value) -> &mut Self {
+        self.extra.insert(key, value);
         self
     }
 
@@ -60,6 +76,7 @@ impl ServiceBuilder {
                 id: self.id,
                 r#type: OneOrList::List(self.r#type),
                 service_endpoint: self.service_endpoint,
+                extra: self.extra,
             })
         }
     }
