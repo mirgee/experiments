@@ -37,7 +37,6 @@ pub struct DIDDocument {
     service: Vec<Service>,
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     #[serde(flatten)]
-    #[serde(default)]
     extra: HashMap<String, Value>,
 }
 

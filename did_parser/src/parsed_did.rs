@@ -6,7 +6,7 @@ use crate::{
     DIDRange,
 };
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct ParsedDID {
     did_url: String,
     did: DIDRange,

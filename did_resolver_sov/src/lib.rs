@@ -152,7 +152,18 @@ mod tests {
     }
 
     #[test]
-    fn it_works() {
-        SetupProfile::run(|init| async move {});
+    fn write_service_on_ledger_and_resolve_did_doc() {
+        SetupProfile::run(|init| async move {
+            let mut resolver = DIDSovResolver::new(init.ledger, NonZeroUsize::new(10).unwrap());
+            let did = ParsedDID::new("did:sov:WRfXPg8dantKVubE3HX8pw").unwrap();
+            let ddo = resolver.resolve(did).await.unwrap();
+            assert_eq!(ddo.id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
+            assert_eq!(ddo.service().len(), 1);
+            assert_eq!(ddo.service()[0].id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
+            assert_eq!(
+                ddo.services()[0].service_endpoint().uri(),
+                "http://localhost:8080"
+            );
+        });
     }
 }

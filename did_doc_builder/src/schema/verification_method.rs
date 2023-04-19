@@ -52,6 +52,7 @@ impl VerificationMethod {
     }
 }
 
+// TODO: Specifying both public_key_multibase and public_key_jwk is not allowed
 #[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct VerificationMethodBuilder {
