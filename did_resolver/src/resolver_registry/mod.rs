@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use crate::{
     error::{DIDResolverError, GenericError},
-    resolvable::{DIDResolutionOptions, DIDResolutionOutput, DIDResolvable},
+    traits::resolvable::{
+        resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
+        DIDResolvable,
+    },
 };
 use did_parser::ParsedDID;
 
