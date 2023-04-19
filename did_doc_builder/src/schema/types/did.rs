@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
 
@@ -49,6 +49,14 @@ impl FromStr for Did {
 impl ToString for Did {
     fn to_string(&self) -> String {
         self.0.clone()
+    }
+}
+
+impl Deref for Did {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

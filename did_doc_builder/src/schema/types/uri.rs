@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +26,14 @@ impl FromStr for Uri {
 impl ToString for Uri {
     fn to_string(&self) -> String {
         self.0.to_string()
+    }
+}
+
+impl Deref for Uri {
+    type Target = uniresid::Uri;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

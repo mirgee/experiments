@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
 
@@ -58,6 +58,14 @@ impl FromStr for DidUrl {
 impl ToString for DidUrl {
     fn to_string(&self) -> String {
         self.0.clone()
+    }
+}
+
+impl Deref for DidUrl {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

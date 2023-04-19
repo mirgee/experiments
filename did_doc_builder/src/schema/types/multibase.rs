@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use multibase::{decode, Base};
 use serde::{Deserialize, Serialize};
@@ -50,6 +50,14 @@ impl FromStr for Multibase {
 impl ToString for Multibase {
     fn to_string(&self) -> String {
         self.base.encode(&self.bytes)
+    }
+}
+
+impl Deref for Multibase {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bytes
     }
 }
 

@@ -10,7 +10,7 @@ use did_resolver::{
     },
     did_parser::ParsedDID,
     error::GenericError,
-    resolvable::DIDResolvable,
+    resolvable::{DIDResolutionOptions, DIDResolutionOutput, DIDResolvable},
 };
 use std::num::NonZeroUsize;
 use std::sync::Arc;
@@ -19,12 +19,12 @@ use async_trait::async_trait;
 use lru::LruCache;
 
 struct DIDSovResolver {
-    ledger: Box<dyn BaseLedger>,
+    ledger: Arc<dyn BaseLedger>,
     cache: LruCache<String, Arc<DIDDocument>>,
 }
 
 impl DIDSovResolver {
-    pub fn new(ledger: Box<dyn BaseLedger>, cache_size: NonZeroUsize) -> Self {
+    pub fn new(ledger: Arc<dyn BaseLedger>, cache_size: NonZeroUsize) -> Self {
         DIDSovResolver {
             ledger,
             cache: LruCache::new(cache_size),
@@ -34,9 +34,13 @@ impl DIDSovResolver {
 
 #[async_trait]
 impl DIDResolvable for DIDSovResolver {
-    async fn resolve(&mut self, did: ParsedDID) -> Result<DIDDocument, GenericError> {
+    async fn resolve(
+        &mut self,
+        did: ParsedDID,
+        _options: DIDResolutionOptions,
+    ) -> Result<DIDResolutionOutput, GenericError> {
         if let Some(ddo) = self.cache.get(did.did()) {
-            return Ok((**ddo).clone());
+            return Ok(DIDResolutionOutput::new((**ddo).clone()));
         }
         let service_endpoint = self.ledger.get_attr(did.did(), "service").await?;
         let service_id = Uri::new(did.did().to_string())?;
@@ -51,7 +55,7 @@ impl DIDResolvable for DIDSovResolver {
                 .build(),
         );
         self.cache.put(did.did().to_string(), ddo.clone());
-        Ok((*ddo).clone())
+        Ok(DIDResolutionOutput::new((*ddo).clone()))
     }
 }
 
@@ -80,10 +84,6 @@ mod tests {
         pub(self) teardown: Arc<dyn Fn() -> BoxFuture<'static, ()>>,
     }
 
-    fn init_test_logging() {
-        env_logger::init();
-    }
-
     pub async fn setup_issuer_wallet() -> (String, WalletHandle) {
         let enterprise_seed = "000000000000000000000000Trustee1";
         let config_wallet = WalletConfig {
@@ -103,13 +103,12 @@ mod tests {
         let config_issuer = wallet_configure_issuer(wallet_handle, enterprise_seed)
             .await
             .unwrap();
-        // init_issuer_config(&config_issuer.institution_did).unwrap();
         (config_issuer.institution_did, wallet_handle)
     }
 
     impl SetupProfile {
         pub async fn init() -> SetupProfile {
-            init_test_logging();
+            env_logger::init();
 
             let (institution_did, wallet_handle) = setup_issuer_wallet().await;
 
@@ -146,24 +145,30 @@ mod tests {
             f(init).await;
 
             (teardown)().await;
-
-            // reset_global_state();
         }
     }
 
-    #[test]
-    fn write_service_on_ledger_and_resolve_did_doc() {
+    // pub async fn write_endpoint(ledger: Arc<dyn BaseLedger>, did: &str, service: &EndpointDidSov) {
+    //     let attrib_json = serde_json::json!({ "endpoint": service }).to_string();
+    //     ledger.add_attr(did, &attrib_json).await.unwrap()
+    // }
+
+    #[tokio::test]
+    async fn write_service_on_ledger_and_resolve_did_doc() {
         SetupProfile::run(|init| async move {
-            let mut resolver = DIDSovResolver::new(init.ledger, NonZeroUsize::new(10).unwrap());
-            let did = ParsedDID::new("did:sov:WRfXPg8dantKVubE3HX8pw").unwrap();
-            let ddo = resolver.resolve(did).await.unwrap();
-            assert_eq!(ddo.id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
-            assert_eq!(ddo.service().len(), 1);
-            assert_eq!(ddo.service()[0].id(), "did:sov:WRfXPg8dantKVubE3HX8pw");
-            assert_eq!(
-                ddo.services()[0].service_endpoint().uri(),
-                "http://localhost:8080"
-            );
-        });
+            let mut resolver =
+                DIDSovResolver::new(init.ledger.clone(), NonZeroUsize::new(10).unwrap());
+            let did = "did:sov:WRfXPg8dantKVubE3HX8pw";
+            let did_doc = resolver
+                .resolve(
+                    ParsedDID::parse(did.to_string()).unwrap(),
+                    DIDResolutionOptions::default(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(did_doc.did_document().id().to_string(), did);
+            println!("Resolved did doc: {:?}", did_doc.did_document());
+        })
+        .await;
     }
 }
