@@ -1,13 +1,16 @@
+pub mod error;
+
 use std::collections::HashMap;
 
 use did_resolver::{
     did_parser::ParsedDID,
-    error::{DIDResolverError, GenericError},
+    error::GenericError,
     traits::resolvable::{
         resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
         DIDResolvable,
     },
 };
+use error::DIDResolverRegistryError;
 
 pub struct ResolverRegistry {
     resolvers: HashMap<String, Box<dyn DIDResolvable>>,
@@ -36,7 +39,7 @@ impl ResolverRegistry {
         let method = did.method();
         match self.resolvers.get_mut(method) {
             Some(resolver) => resolver.resolve(did, options).await,
-            None => Err(Box::new(DIDResolverError::UnsupportedMethod)),
+            None => Err(Box::new(DIDResolverRegistryError::UnsupportedMethod)),
         }
     }
 }

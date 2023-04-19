@@ -12,7 +12,10 @@ use did_resolver::{
     },
     did_parser::ParsedDID,
     error::GenericError,
-    resolvable::{DIDResolutionOptions, DIDResolutionOutput, DIDResolvable},
+    traits::resolvable::{
+        resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
+        DIDResolvable,
+    },
 };
 use serde_json::Value;
 use std::num::NonZeroUsize;
@@ -21,7 +24,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lru::LruCache;
 
-struct DIDSovResolver {
+pub struct DIDSovResolver {
     ledger: Arc<dyn BaseLedger>,
     cache: LruCache<String, Arc<DIDDocument>>,
 }
@@ -83,45 +86,4 @@ async fn resolve_ddo(
             .add_service(service_builder.build()?)
             .build(),
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use std::thread;
-    use std::time::Duration;
-
-    use super::*;
-    use aries_vcx::{
-        common::ledger::{
-            service_didsov::{DidSovServiceType, EndpointDidSov},
-            transactions::write_endpoint,
-        },
-        utils::devsetup::SetupProfile,
-    };
-
-    #[tokio::test]
-    async fn write_service_on_ledger_and_resolve_did_doc() {
-        SetupProfile::run(|init| async move {
-            let did = format!("did:sov:{}", init.institution_did);
-            let endpoint = EndpointDidSov::create()
-                .set_service_endpoint("http://localhost:8080".to_string())
-                .set_routing_keys(Some(vec!["key1".to_string(), "key2".to_string()]))
-                .set_types(Some(vec![DidSovServiceType::Endpoint]));
-            write_endpoint(&init.profile, &init.institution_did, &endpoint)
-                .await
-                .unwrap();
-            thread::sleep(Duration::from_millis(50));
-            let mut resolver =
-                DIDSovResolver::new(init.profile.inject_ledger(), NonZeroUsize::new(10).unwrap());
-            let did_doc = resolver
-                .resolve(
-                    ParsedDID::parse(did.clone()).unwrap(),
-                    DIDResolutionOptions::default(),
-                )
-                .await
-                .unwrap();
-            assert_eq!(did_doc.did_document().id().to_string(), did);
-        })
-        .await;
-    }
 }
