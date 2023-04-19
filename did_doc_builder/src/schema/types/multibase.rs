@@ -47,6 +47,12 @@ impl FromStr for Multibase {
     }
 }
 
+impl ToString for Multibase {
+    fn to_string(&self) -> String {
+        self.base.encode(&self.bytes)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -62,5 +68,48 @@ mod tests {
     fn test_multibase_new_invalid() {
         let multibase = Multibase::new("invalidmultibasekey".to_string());
         assert!(multibase.is_err());
+    }
+
+    #[test]
+    fn test_multibase_deserialize_valid() {
+        let multibase: Multibase =
+            serde_json::from_str("\"zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e\"").unwrap();
+        assert_eq!(
+            multibase,
+            Multibase {
+                base: Base::Base58Btc,
+                bytes: decode("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e")
+                    .unwrap()
+                    .1
+            }
+        )
+    }
+
+    #[test]
+    fn test_multibase_deserialize_invalid() {
+        let multibase: Result<Multibase, _> = serde_json::from_str("\"invalidmultibasekey\"");
+        assert!(multibase.is_err());
+    }
+
+    #[test]
+    fn test_multibase_from_str_valid() {
+        let multibase = "zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".parse::<Multibase>();
+        assert!(multibase.is_ok());
+    }
+
+    #[test]
+    fn test_multibase_from_str_invalid() {
+        let multibase = "invalidmultibasekey".parse::<Multibase>();
+        assert!(multibase.is_err());
+    }
+
+    #[test]
+    fn test_multibase_to_string() {
+        let multibase =
+            Multibase::new("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".to_string()).unwrap();
+        assert_eq!(
+            multibase.to_string(),
+            "QmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e"
+        );
     }
 }

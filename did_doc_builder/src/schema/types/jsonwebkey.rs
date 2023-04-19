@@ -32,6 +32,12 @@ impl FromStr for JsonWebKey {
     }
 }
 
+impl ToString for JsonWebKey {
+    fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 fn is_valid_jwk(_jwk: &str) -> bool {
     true
 }

@@ -55,6 +55,12 @@ impl FromStr for DidUrl {
     }
 }
 
+impl ToString for DidUrl {
+    fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -95,6 +101,12 @@ mod tests {
     fn test_did_url_from_str_invalid() {
         let did_url = DidUrl::from_str("invalid:example:123456789abcdefghi#key-1");
         assert!(did_url.is_err());
+    }
+
+    #[test]
+    fn test_did_url_to_string() {
+        let did_url = DidUrl::new("did:example:123456789abcdefghi#key-1".to_string()).unwrap();
+        assert_eq!(did_url.to_string(), "did:example:123456789abcdefghi#key-1");
     }
 
     #[test]

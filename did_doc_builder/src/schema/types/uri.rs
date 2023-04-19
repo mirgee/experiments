@@ -23,6 +23,12 @@ impl FromStr for Uri {
     }
 }
 
+impl ToString for Uri {
+    fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

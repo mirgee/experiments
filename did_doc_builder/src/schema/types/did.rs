@@ -46,6 +46,12 @@ impl FromStr for Did {
     }
 }
 
+impl ToString for Did {
+    fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
+
 fn is_valid_did(did: &str) -> bool {
     // TODO: This is just dummy "validation"
     did.starts_with("did:")
@@ -91,6 +97,12 @@ mod tests {
     fn test_did_from_str_invalid() {
         let did = Did::from_str("invalid:example:123456789abcdefghi");
         assert!(did.is_err());
+    }
+
+    #[test]
+    fn test_did_to_string() {
+        let did = Did::new("did:example:123456789abcdefghi".to_string()).unwrap();
+        assert_eq!(did.to_string(), "did:example:123456789abcdefghi");
     }
 
     #[test]
