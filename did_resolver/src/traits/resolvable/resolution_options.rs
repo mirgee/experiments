@@ -1,4 +1,4 @@
-type MediaType = String;
+use crate::shared_types::media_type::MediaType;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct DIDResolutionOptions {

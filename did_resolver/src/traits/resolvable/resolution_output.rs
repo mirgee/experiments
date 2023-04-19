@@ -1,9 +1,8 @@
 use did_doc_builder::schema::did_doc::DIDDocument;
 use serde::{Deserialize, Serialize};
 
-use crate::traits::did_document_metadata::DIDDocumentMetadata;
-
 use super::resolution_metadata::DIDResolutionMetadata;
+use crate::shared_types::did_document_metadata::DIDDocumentMetadata;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]

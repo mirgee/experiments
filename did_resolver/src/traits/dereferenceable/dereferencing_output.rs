@@ -1,4 +1,4 @@
-use crate::traits::did_document_metadata::DIDDocumentMetadata;
+use crate::shared_types::did_document_metadata::DIDDocumentMetadata;
 
 use super::dereferencing_metadata::DIDDereferencingMetadata;
 

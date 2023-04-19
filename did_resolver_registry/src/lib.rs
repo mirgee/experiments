@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{
+use did_resolver::{
+    did_parser::ParsedDID,
     error::{DIDResolverError, GenericError},
     traits::resolvable::{
         resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
         DIDResolvable,
     },
 };
-use did_parser::ParsedDID;
 
 pub struct ResolverRegistry {
     resolvers: HashMap<String, Box<dyn DIDResolvable>>,
@@ -45,7 +45,7 @@ impl ResolverRegistry {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use did_doc_builder::schema::{did_doc::DIDDocumentBuilder, types::did::Did};
+    use did_resolver::did_doc_builder::schema::{did_doc::DIDDocumentBuilder, types::did::Did};
     use mockall::{automock, predicate::*};
     use std::{error::Error, pin::Pin};
 
