@@ -12,11 +12,47 @@ use did_resolver::{
     error::GenericError,
     resolvable::{DIDResolutionOptions, DIDResolutionOutput, DIDResolvable},
 };
-use std::num::NonZeroUsize;
+use error::DIDSovError;
+use serde::Deserialize;
+use serde_json::Value;
 use std::sync::Arc;
+use std::{fmt::Display, num::NonZeroUsize};
 
 use async_trait::async_trait;
 use lru::LruCache;
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct EndpointDidSov {
+    pub endpoint: String,
+    #[serde(default)]
+    pub routing_keys: Vec<String>,
+    #[serde(default)]
+    pub types: Vec<DidSovServiceType>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub enum DidSovServiceType {
+    #[serde(rename = "endpoint")] // AIP 1.0
+    Endpoint,
+    #[serde(rename = "did-communication")] // AIP 2.0
+    DidCommunication,
+    #[serde(rename = "DIDComm")] // DIDComm V2
+    DIDComm,
+    #[serde(other)]
+    Unknown,
+}
+
+impl Display for DidSovServiceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DidSovServiceType::Endpoint => write!(f, "endpoint"),
+            DidSovServiceType::DidCommunication => write!(f, "did-communication"),
+            DidSovServiceType::DIDComm => write!(f, "DIDComm"),
+            DidSovServiceType::Unknown => write!(f, "Unknown"),
+        }
+    }
+}
 
 struct DIDSovResolver {
     ledger: Arc<dyn BaseLedger>,
@@ -32,6 +68,11 @@ impl DIDSovResolver {
     }
 }
 
+fn get_data_from_response(resp: &str) -> Result<Value, DIDSovError> {
+    let resp: serde_json::Value = serde_json::from_str(resp)?;
+    serde_json::from_str(resp["result"]["data"].as_str().unwrap_or("{}")).map_err(|err| err.into())
+}
+
 #[async_trait]
 impl DIDResolvable for DIDSovResolver {
     async fn resolve(
@@ -42,16 +83,22 @@ impl DIDResolvable for DIDSovResolver {
         if let Some(ddo) = self.cache.get(did.did()) {
             return Ok(DIDResolutionOutput::new((**ddo).clone()));
         }
-        let service_endpoint = self.ledger.get_attr(did.did(), "service").await?;
+        let service_data =
+            get_data_from_response(&self.ledger.get_attr(did.did(), "endpoint").await?)?;
+
+        let endpoint: EndpointDidSov = serde_json::from_value(service_data["endpoint"].clone())?;
+
         let service_id = Uri::new(did.did().to_string())?;
         let ddo_did = Did::new(did.did().to_string())?;
+        let mut service_builder = ServiceBuilder::new(service_id, endpoint.endpoint);
+        for t in endpoint.types {
+            if t != DidSovServiceType::Unknown {
+                service_builder = service_builder.add_type(t.to_string());
+            };
+        }
         let ddo = Arc::new(
             DIDDocumentBuilder::new(ddo_did)
-                .add_service(
-                    ServiceBuilder::new(service_id, service_endpoint)
-                        .add_type("endpoint".to_string())
-                        .build()?,
-                )
+                .add_service(service_builder.build()?)
                 .build(),
         );
         self.cache.put(did.did().to_string(), ddo.clone());
@@ -61,113 +108,40 @@ impl DIDResolvable for DIDSovResolver {
 
 #[cfg(test)]
 mod tests {
-    use std::{future::Future, pin::Pin};
+    use std::thread;
+    use std::time::Duration;
 
     use super::*;
-    use aries_vcx_core::{
-        indy::{
-            ledger::pool::test_utils::{delete_test_pool, open_test_pool},
-            wallet::{
-                create_wallet_with_master_secret, open_wallet, wallet_configure_issuer,
-                WalletConfig,
-            },
+    use aries_vcx::{
+        common::ledger::{
+            service_didsov::{DidSovServiceType, EndpointDidSov},
+            transactions::write_endpoint,
         },
-        ledger::indy_ledger::IndySdkLedger,
-        PoolHandle, WalletHandle,
+        utils::devsetup::SetupProfile,
     };
-
-    type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
-
-    struct SetupProfile {
-        pub institution_did: String,
-        pub ledger: Arc<dyn BaseLedger>,
-        pub(self) teardown: Arc<dyn Fn() -> BoxFuture<'static, ()>>,
-    }
-
-    pub async fn setup_issuer_wallet() -> (String, WalletHandle) {
-        let enterprise_seed = "000000000000000000000000Trustee1";
-        let config_wallet = WalletConfig {
-            wallet_name: format!("wallet_{}", uuid::Uuid::new_v4().to_string()),
-            wallet_key: "8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY".into(),
-            wallet_key_derivation: "RAW".into(),
-            wallet_type: None,
-            storage_config: None,
-            storage_credentials: None,
-            rekey: None,
-            rekey_derivation_method: None,
-        };
-        create_wallet_with_master_secret(&config_wallet)
-            .await
-            .unwrap();
-        let wallet_handle = open_wallet(&config_wallet).await.unwrap();
-        let config_issuer = wallet_configure_issuer(wallet_handle, enterprise_seed)
-            .await
-            .unwrap();
-        (config_issuer.institution_did, wallet_handle)
-    }
-
-    impl SetupProfile {
-        pub async fn init() -> SetupProfile {
-            env_logger::init();
-
-            let (institution_did, wallet_handle) = setup_issuer_wallet().await;
-
-            // settings::set_config_value(
-            //     settings::CONFIG_GENESIS_PATH,
-            //     utils::get_temp_dir_path(settings::DEFAULT_GENESIS_PATH)
-            //         .to_str()
-            //         .unwrap(),
-            // )
-            // .unwrap();
-            let pool_handle = open_test_pool().await;
-
-            let ledger = Arc::new(IndySdkLedger::new(wallet_handle, pool_handle));
-
-            async fn indy_teardown(pool_handle: PoolHandle) {
-                delete_test_pool(pool_handle.clone()).await;
-            }
-
-            SetupProfile {
-                institution_did,
-                ledger,
-                teardown: Arc::new(move || Box::pin(indy_teardown(pool_handle))),
-            }
-        }
-
-        pub async fn run<F>(f: impl FnOnce(Self) -> F)
-        where
-            F: Future<Output = ()>,
-        {
-            let init = Self::init().await;
-
-            let teardown = Arc::clone(&init.teardown);
-
-            f(init).await;
-
-            (teardown)().await;
-        }
-    }
-
-    // pub async fn write_endpoint(ledger: Arc<dyn BaseLedger>, did: &str, service: &EndpointDidSov) {
-    //     let attrib_json = serde_json::json!({ "endpoint": service }).to_string();
-    //     ledger.add_attr(did, &attrib_json).await.unwrap()
-    // }
 
     #[tokio::test]
     async fn write_service_on_ledger_and_resolve_did_doc() {
         SetupProfile::run(|init| async move {
+            let did = format!("did:sov:{}", init.institution_did);
+            let endpoint = EndpointDidSov::create()
+                .set_service_endpoint("http://localhost:8080".to_string())
+                .set_routing_keys(Some(vec!["key1".to_string(), "key2".to_string()]))
+                .set_types(Some(vec![DidSovServiceType::Endpoint]));
+            write_endpoint(&init.profile, &init.institution_did, &endpoint)
+                .await
+                .unwrap();
+            thread::sleep(Duration::from_millis(50));
             let mut resolver =
-                DIDSovResolver::new(init.ledger.clone(), NonZeroUsize::new(10).unwrap());
-            let did = "did:sov:WRfXPg8dantKVubE3HX8pw";
+                DIDSovResolver::new(init.profile.inject_ledger(), NonZeroUsize::new(10).unwrap());
             let did_doc = resolver
                 .resolve(
-                    ParsedDID::parse(did.to_string()).unwrap(),
+                    ParsedDID::parse(did.clone()).unwrap(),
                     DIDResolutionOptions::default(),
                 )
                 .await
                 .unwrap();
             assert_eq!(did_doc.did_document().id().to_string(), did);
-            println!("Resolved did doc: {:?}", did_doc.did_document());
         })
         .await;
     }

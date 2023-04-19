@@ -18,3 +18,9 @@ impl From<AriesVcxCoreError> for DIDSovError {
         DIDSovError
     }
 }
+
+impl From<serde_json::Error> for DIDSovError {
+    fn from(_err: serde_json::Error) -> Self {
+        DIDSovError
+    }
+}
