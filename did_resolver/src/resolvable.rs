@@ -13,7 +13,7 @@ pub struct DIDResolutionOptions {
 
 impl DIDResolutionOptions {
     pub fn new() -> Self {
-        DIDResolutionOptions { accept: None }
+        Self { accept: None }
     }
 
     pub fn set_accept(mut self, accept: String) -> Self {
@@ -92,7 +92,7 @@ pub enum DIDResolutionErrorType {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct DIDResolutionMetadata {
-    content_type: String,
+    content_type: Option<String>,
     error: Option<DIDResolutionErrorType>,
 }
 
