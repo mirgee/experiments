@@ -91,7 +91,6 @@ impl DIDDocument {
 }
 
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct DIDDocumentBuilder {
     id: Did,
     also_known_as: Vec<Uri>,
@@ -106,7 +105,6 @@ pub struct DIDDocumentBuilder {
     extra: HashMap<String, Value>,
 }
 
-#[allow(dead_code)]
 impl DIDDocumentBuilder {
     pub fn new(id: Did) -> Self {
         Self {
@@ -254,14 +252,14 @@ mod tests {
             Did::new("did:example:vm2".to_string())?,
             "typevm".to_string(),
         )
-        .build();
+        .build()?;
         let authentication_reference = DidUrl::new("did:example:authref".to_string())?;
         let assertion_method = VerificationMethodBuilder::new(
             DidUrl::new("did:example:am1".to_string())?,
             Did::new("did:example:am2".to_string())?,
             "typeam".to_string(),
         )
-        .build();
+        .build()?;
 
         let service_id = Uri::new("did:example:123456789abcdefghi;service-1".to_string())?;
         let service_type = "test-service".to_string();

@@ -22,7 +22,6 @@ pub struct DIDSovResolver {
     cache: LruCache<String, Arc<DIDDocument>>,
 }
 
-#[allow(dead_code)]
 impl DIDSovResolver {
     pub fn new(ledger: Arc<dyn BaseLedger>, cache_size: NonZeroUsize) -> Self {
         DIDSovResolver {

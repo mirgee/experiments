@@ -106,7 +106,8 @@ fn test_deserialization() {
         )
         .unwrap(),
     )
-    .build();
+    .build()
+    .unwrap();
 
     let vm2_id = DidUrl::from_str("#g2").unwrap();
     let vm2 = VerificationMethodBuilder::new(
@@ -124,7 +125,7 @@ fn test_deserialization() {
         )
         .unwrap(),
     )
-    .build();
+    .build().unwrap();
 
     assert_eq!(did_doc.verification_method().get(0).unwrap().clone(), vm1);
     assert_eq!(did_doc.verification_method().get(1).unwrap().clone(), vm2);
@@ -184,7 +185,8 @@ fn test_deserialization() {
         "publicKeyBase58".to_string(),
         Value::String("CaSHXEvLKS6SfN9aBfkVGBpp15jSnaHazqHgLHp8KZ3Y".to_string()),
     )
-    .build();
+    .build()
+    .unwrap();
 
     assert_eq!(
         did_doc.key_agreement(),

@@ -47,7 +47,6 @@ impl Service {
 }
 
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct ServiceBuilder {
     id: Uri,
     r#type: HashSet<String>,
@@ -55,7 +54,6 @@ pub struct ServiceBuilder {
     extra: HashMap<String, Value>,
 }
 
-#[allow(dead_code)]
 impl ServiceBuilder {
     pub fn new(id: Uri, service_endpoint: String) -> Result<Self, DIDDocumentBuilderError> {
         if id.is_empty() {

@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::error::DIDDocumentBuilderError;
+
 use super::types::{did::Did, did_url::DidUrl, jsonwebkey::JsonWebKey, multibase::Multibase};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -56,9 +58,7 @@ impl VerificationMethod {
     }
 }
 
-// TODO: Specifying both public_key_multibase and public_key_jwk is not allowed
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct VerificationMethodBuilder {
     id: DidUrl,
     controller: Did,
@@ -68,7 +68,6 @@ pub struct VerificationMethodBuilder {
     extra: HashMap<String, Value>,
 }
 
-#[allow(dead_code)]
 impl VerificationMethodBuilder {
     pub fn new(id: DidUrl, controller: Did, r#type: String) -> Self {
         Self {
@@ -95,14 +94,20 @@ impl VerificationMethodBuilder {
         self
     }
 
-    pub fn build(self) -> VerificationMethod {
-        VerificationMethod {
-            id: self.id,
-            r#type: self.r#type,
-            controller: self.controller,
-            public_key_multibase: self.public_key_multibase,
-            public_key_jwk: self.public_key_jwk,
-            extra: self.extra,
+    pub fn build(self) -> Result<VerificationMethod, DIDDocumentBuilderError> {
+        if self.public_key_multibase.is_some() && self.public_key_jwk.is_some() {
+            return Err(DIDDocumentBuilderError::InvalidInput(
+                "Cannot specify both public_key_multibase and public_key_jwk".to_string(),
+            ));
+        } else {
+            Ok(VerificationMethod {
+                id: self.id,
+                r#type: self.r#type,
+                controller: self.controller,
+                public_key_multibase: self.public_key_multibase,
+                public_key_jwk: self.public_key_jwk,
+                extra: self.extra,
+            })
         }
     }
 }
@@ -127,8 +132,9 @@ mod tests {
         let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = "Ed25519VerificationKey2018".to_string();
-        let vm =
-            VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone()).build();
+        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+            .build()
+            .unwrap();
         assert_eq!(vm.id(), &id);
     }
 
@@ -141,7 +147,8 @@ mod tests {
 
         let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
             .add_public_key_multibase(public_key_multibase.clone())
-            .build();
+            .build()
+            .unwrap();
 
         assert_eq!(vm.id(), &id);
         assert_eq!(vm.controller(), &controller);
@@ -159,7 +166,8 @@ mod tests {
 
         let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
             .add_extra(extra_key.clone(), extra_value.clone())
-            .build();
+            .build()
+            .unwrap();
         assert_eq!(vm.extra(&extra_key).unwrap(), &extra_value);
     }
 
@@ -175,7 +183,8 @@ mod tests {
         let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
             .add_public_key_multibase(public_key_multibase.clone())
             .add_extra(extra_key.clone(), extra_value.clone())
-            .build();
+            .build()
+            .unwrap();
 
         assert_eq!(vm.id(), &id);
         assert_eq!(vm.controller(), &controller);
