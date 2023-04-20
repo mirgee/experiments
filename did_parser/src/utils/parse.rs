@@ -64,16 +64,20 @@ pub(crate) fn parse_did_method_id(
     Ok((did, method, id))
 }
 
-pub(crate) fn parse_path(did_url: &str, current_pos: usize) -> Option<DIDRange> {
+pub(crate) fn parse_path(did_url: &str, current_pos: usize) -> Result<DIDRange, ParseError> {
     if !did_url[current_pos..].starts_with('/') {
-        return None;
+        return Err(ParseError::InvalidDIDURL);
     }
     // Path ends with query, fragment, param or end of string
     let path_end = did_url[current_pos..]
         .find(|c: char| c == '?' || c == '#' || c == ';')
         .map_or(did_url.len(), |i| i + current_pos);
 
-    Some(current_pos..path_end)
+    if path_end - current_pos <= 1 {
+        return Err(ParseError::InvalidDIDURL);
+    }
+
+    Ok(current_pos..path_end)
 }
 
 #[cfg(test)]
@@ -114,12 +118,12 @@ mod tests {
             "did:example:123456789abcdefghi/path1/path2?param1=value1&param2=value2#fragment";
         let path_start = did_url.find('/').unwrap();
 
-        let result = parse_path(did_url, path_start);
-        assert_eq!(Some(path_start..(did_url.find('?').unwrap())), result);
+        let result = parse_path(did_url, path_start).unwrap();
+        assert_eq!(path_start..(did_url.find('?').unwrap()), result);
 
         let no_path_did_url = "did:example:123456789abcdefghi?param1=value1&param2=value2#fragment";
 
         let result = parse_path(no_path_did_url, 0);
-        assert_eq!(None, result);
+        assert!(result.is_err());
     }
 }

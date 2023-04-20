@@ -20,14 +20,23 @@ pub struct ParsedDID {
 
 impl ParsedDID {
     pub fn parse(did_url: String) -> Result<Self, ParseError> {
-        let (did, method, id) = parse_did_method_id(&did_url)?;
+        let (did, method, id) = if did_url.starts_with('#')
+            || did_url.starts_with('/')
+            || did_url.starts_with('?')
+            || did_url.starts_with(';')
+        {
+            (None, None, None)
+        } else {
+            let (did, method, id) = parse_did_method_id(&did_url)?;
+            (Some(did), Some(method), Some(id))
+        };
 
         let mut path = None;
         let mut fragment = None;
         let mut queries = HashMap::new();
         let mut params = HashMap::new();
 
-        let mut current_pos = id.end;
+        let mut current_pos = id.clone().map_or(0, |id| id.end);
 
         while current_pos < did_url.len() {
             match did_url.chars().nth(current_pos) {
@@ -39,7 +48,7 @@ impl ParsedDID {
                 }
                 Some('/') => {
                     if path.is_none() {
-                        path = parse_path(&did_url, current_pos);
+                        path = Some(parse_path(&did_url, current_pos)?);
                         current_pos = path.as_ref().unwrap().end;
                     } else {
                         current_pos += 1;
@@ -61,11 +70,22 @@ impl ParsedDID {
             };
         }
 
+        if did.is_none()
+            && method.is_none()
+            && id.is_none()
+            && path.is_none()
+            && fragment.is_none()
+            && queries.is_empty()
+            && params.is_empty()
+        {
+            return Err(ParseError::InvalidDIDURL);
+        }
+
         Ok(ParsedDID {
             did_url,
-            did: Some(did),
-            method: Some(method),
-            id: Some(id),
+            did,
+            method,
+            id,
             path,
             queries,
             fragment,

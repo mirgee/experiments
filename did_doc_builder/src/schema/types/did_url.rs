@@ -1,6 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
-// use did_parser::is_valid_did_url;
+use did_parser::is_valid_did_url;
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
@@ -37,15 +37,6 @@ impl<'de> Deserialize<'de> for DidUrl {
             ))
         }
     }
-}
-
-fn is_valid_did_url(did: &str) -> bool {
-    // TODO: This is just dummy "validation"
-    did.starts_with("did:")
-        || did.starts_with("/")
-        || did.starts_with("#")
-        || did.starts_with("?")
-        || did.starts_with(";")
 }
 
 impl FromStr for DidUrl {

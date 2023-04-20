@@ -230,4 +230,75 @@ test_cases_positive! {
             ]);
             params
         }
+    test_case15:
+        "/path",
+        None,
+        None,
+        None,
+        Some("/path"),
+        None,
+        HashMap::new(),
+        HashMap::new()
+
+    test_case16:
+        "?query=value",
+        None,
+        None,
+        None,
+        None,
+        None,
+        {
+            let mut queries = HashMap::new();
+            queries.insert("query".to_string(), "value".to_string());
+            queries
+        },
+        HashMap::new()
+
+    test_case17:
+        "#fragment",
+        None,
+        None,
+        None,
+        None,
+        Some("fragment"),
+        HashMap::new(),
+        HashMap::new()
+
+    test_case18:
+        ";param=value",
+        None,
+        None,
+        None,
+        None,
+        None,
+        HashMap::new(),
+        {
+            let mut params = HashMap::new();
+            params.insert("param".to_string(), "value".to_string());
+            params
+        }
+
+    test_case19:
+        "/path?query=value",
+        None,
+        None,
+        None,
+        Some("/path"),
+        None,
+        {
+            let mut queries = HashMap::new();
+            queries.insert("query".to_string(), "value".to_string());
+            queries
+        },
+        HashMap::new()
+
+    test_case20:
+        "/path#fragment",
+        None,
+        None,
+        None,
+        Some("/path"),
+        Some("fragment"),
+        HashMap::new(),
+        HashMap::new()
 }

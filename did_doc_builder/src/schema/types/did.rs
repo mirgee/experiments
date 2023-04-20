@@ -1,6 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
-// use did_parser::is_valid_did;
+use did_parser::is_valid_did;
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
@@ -59,11 +59,6 @@ impl Deref for Did {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
-}
-
-fn is_valid_did(did: &str) -> bool {
-    // TODO: This is just dummy "validation"
-    did.starts_with("did:")
 }
 
 #[cfg(test)]
