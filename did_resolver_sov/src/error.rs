@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use aries_vcx_core::errors::error::AriesVcxCoreError;
 use did_resolver::{
     did_doc_builder::error::DIDDocumentBuilderError,
@@ -7,39 +5,33 @@ use did_resolver::{
         resolution_error::DIDResolutionError, resolution_metadata::DIDResolutionMetadata,
     },
 };
+use thiserror::Error;
 
-#[derive(Debug)]
-pub struct DIDSovError;
-
-impl Error for DIDSovError {}
-
-impl std::fmt::Display for DIDSovError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "DIDSovError")
-    }
-}
-
-impl From<AriesVcxCoreError> for DIDSovError {
-    fn from(_err: AriesVcxCoreError) -> Self {
-        DIDSovError
-    }
-}
-
-impl From<serde_json::Error> for DIDSovError {
-    fn from(_err: serde_json::Error) -> Self {
-        DIDSovError
-    }
-}
-
-impl From<DIDDocumentBuilderError> for DIDSovError {
-    fn from(_err: DIDDocumentBuilderError) -> Self {
-        DIDSovError
-    }
+// TODO: DIDDocumentBuilderError should do key validation and the error
+// should me mapped accordingly
+#[derive(Debug, Error)]
+pub enum DIDSovError {
+    #[error("DID document not found")]
+    NotFound,
+    #[error("DID method not supported: {0}")]
+    MethodNotSupported(String),
+    #[error("Internal error")]
+    InternalError,
+    #[error("AriesVCX Core error: {0}")]
+    AriesVcxCoreError(#[from] AriesVcxCoreError),
+    #[error("DID Document Builder Error: {0}")]
+    DIDDocumentBuilderError(#[from] DIDDocumentBuilderError),
+    #[error("Serde error: {0}")]
+    SerdeError(#[from] serde_json::Error),
 }
 
 impl From<DIDSovError> for DIDResolutionError {
-    fn from(_err: DIDSovError) -> Self {
-        DIDResolutionError::InternalError
+    fn from(err: DIDSovError) -> Self {
+        match err {
+            DIDSovError::NotFound => DIDResolutionError::NotFound,
+            DIDSovError::MethodNotSupported(_) => DIDResolutionError::MethodNotSupported,
+            _ => DIDResolutionError::InternalError,
+        }
     }
 }
 

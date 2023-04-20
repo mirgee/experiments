@@ -31,7 +31,9 @@ fn get_data_from_response(resp: &str) -> Result<Value, DIDSovError> {
 
 fn get_txn_time_from_response(resp: &str) -> Result<i64, DIDSovError> {
     let resp: serde_json::Value = serde_json::from_str(resp)?;
-    let txn_time = resp["result"]["txnTime"].as_i64().ok_or(DIDSovError)?;
+    let txn_time = resp["result"]["txnTime"]
+        .as_i64()
+        .ok_or(DIDSovError::InternalError)?;
     Ok(txn_time)
 }
 

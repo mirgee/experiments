@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use crate::{
     error::ParseError,
-    parsing::{parse_did_method_id, parse_key_value, parse_path},
+    utils::parse::{parse_did_method_id, parse_key_value, parse_path},
     DIDRange,
 };
 

@@ -62,10 +62,61 @@ pub(crate) fn parse_did_method_id(
 }
 
 pub(crate) fn parse_path(did_url: &str, current_pos: usize) -> Option<DIDRange> {
+    if !did_url[current_pos..].starts_with('/') {
+        return None;
+    }
     // Path ends with query, fragment, param or end of string
     let path_end = did_url[current_pos..]
         .find(|c: char| c == '?' || c == '#' || c == ';')
         .map_or(did_url.len(), |i| i + current_pos);
 
     Some(current_pos..path_end)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_key_value() {
+        let did_url = "?key1=value1&key2=value2";
+        let start = 0;
+        let end = did_url.len();
+
+        let result = parse_key_value(did_url, start, end).unwrap();
+        assert_eq!((1, 6, 12), result);
+
+        let start = 12;
+        let result = parse_key_value(did_url, start, end).unwrap();
+        assert_eq!((13, 18, did_url.len()), result);
+    }
+
+    #[test]
+    fn test_parse_did_method_id() {
+        let valid_did = "did:example:123456789abcdefghi";
+        let result = parse_did_method_id(valid_did).unwrap();
+
+        assert_eq!(0..valid_did.len(), result.0);
+        assert_eq!(4..11, result.1);
+        assert_eq!(12..valid_did.len(), result.2);
+
+        let invalid_did = "did-example:123456789abcdefghi";
+        let result = parse_did_method_id(invalid_did);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_path() {
+        let did_url =
+            "did:example:123456789abcdefghi/path1/path2?param1=value1&param2=value2#fragment";
+        let path_start = did_url.find('/').unwrap();
+
+        let result = parse_path(did_url, path_start);
+        assert_eq!(Some(path_start..(did_url.find('?').unwrap())), result);
+
+        let no_path_did_url = "did:example:123456789abcdefghi?param1=value1&param2=value2#fragment";
+
+        let result = parse_path(no_path_did_url, 0);
+        assert_eq!(None, result);
+    }
 }
