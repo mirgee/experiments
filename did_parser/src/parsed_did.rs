@@ -9,9 +9,9 @@ use crate::{
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct ParsedDID {
     did_url: String,
-    did: DIDRange,
-    method: DIDRange,
-    id: DIDRange,
+    did: Option<DIDRange>,
+    method: Option<DIDRange>,
+    id: Option<DIDRange>,
     path: Option<DIDRange>,
     fragment: Option<DIDRange>,
     queries: HashMap<DIDRange, DIDRange>,
@@ -63,9 +63,9 @@ impl ParsedDID {
 
         Ok(ParsedDID {
             did_url,
-            did,
-            method,
-            id,
+            did: Some(did),
+            method: Some(method),
+            id: Some(id),
             path,
             queries,
             fragment,
@@ -73,16 +73,18 @@ impl ParsedDID {
         })
     }
 
-    pub fn did(&self) -> &str {
-        &self.did_url[self.did.clone()]
+    pub fn did(&self) -> Option<&str> {
+        self.did.clone().map(|range| self.did_url[range].as_ref())
     }
 
-    pub fn method(&self) -> &str {
-        &self.did_url[self.method.clone()]
+    pub fn method(&self) -> Option<&str> {
+        self.method
+            .clone()
+            .map(|range| self.did_url[range].as_ref())
     }
 
-    pub fn id(&self) -> &str {
-        &self.did_url[self.id.clone()]
+    pub fn id(&self) -> Option<&str> {
+        self.id.clone().map(|range| self.did_url[range].as_ref())
     }
 
     pub fn path(&self) -> Option<&str> {

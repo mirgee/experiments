@@ -23,9 +23,9 @@ macro_rules! test_cases_positive {
 test_cases_positive! {
     test_case1:
         "did:example:123456789abcdefghi",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         None,
         HashMap::new(),
@@ -33,9 +33,9 @@ test_cases_positive! {
 
     test_case2:
         "did:example:123456789abcdefghi/path",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         None,
         HashMap::new(),
@@ -43,9 +43,9 @@ test_cases_positive! {
 
     test_case3:
         "did:example:123456789abcdefghi/path?query1=value1&query2=value2",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         None,
         {
@@ -60,9 +60,9 @@ test_cases_positive! {
 
     test_case4:
         "did:example:123456789abcdefghi/path?query=value#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         Some("fragment"),
         {
@@ -74,9 +74,9 @@ test_cases_positive! {
 
     test_case5:
         "did:example:123456789abcdefghi;param1=value1;param2=value2#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         Some("fragment"),
         HashMap::new(),
@@ -91,9 +91,9 @@ test_cases_positive! {
 
     test_case6:
         "did:example:123456789abcdefghi#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         Some("fragment"),
         HashMap::new(),
@@ -101,9 +101,9 @@ test_cases_positive! {
 
     test_case7:
         "did:example:123456789abcdefghi?query=value",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         None,
         {
@@ -115,9 +115,9 @@ test_cases_positive! {
 
     test_case8:
         "did:example:123456789abcdefghi/path#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         Some("fragment"),
         HashMap::new(),
@@ -125,9 +125,9 @@ test_cases_positive! {
 
     test_case9:
         "did:example:123456789abcdefghi;param=value",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         None,
         HashMap::new(),
@@ -139,9 +139,9 @@ test_cases_positive! {
 
     test_case10:
         "did:example:123456789abcdefghi;param=value?query=value",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         None,
         {
@@ -157,9 +157,9 @@ test_cases_positive! {
 
     test_case11:
         "did:example:123456789abcdefghi/path;param=value",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         None,
         HashMap::new(),
@@ -171,9 +171,9 @@ test_cases_positive! {
 
     test_case12:
         "did:example:123456789abcdefghi/path?query1=value1;param1=value1&query2=value2#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         Some("/path"),
         Some("fragment"),
         {
@@ -192,9 +192,9 @@ test_cases_positive! {
 
     test_case13:
         "did:example:123456789abcdefghi?query=value&query2=#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         Some("fragment"),
         {
@@ -209,9 +209,9 @@ test_cases_positive! {
 
     test_case14:
         "did:example:123456789abcdefghi;param1=value1;param2=value2?query1=value1&query2=value2#fragment",
-        "did:example:123456789abcdefghi",
-        "example",
-        "123456789abcdefghi",
+        Some("did:example:123456789abcdefghi"),
+        Some("example"),
+        Some("123456789abcdefghi"),
         None,
         Some("fragment"),
         {

@@ -13,6 +13,8 @@ use did_resolver::{
 };
 use lru::LruCache;
 
+use crate::error::DIDSovError;
+
 use super::utils::resolve_ddo;
 
 pub struct DIDSovResolver {
@@ -34,16 +36,19 @@ impl DIDSovResolver {
 impl DIDResolvable for DIDSovResolver {
     async fn resolve(
         &mut self,
-        did: ParsedDID,
+        parsed_did: ParsedDID, // TODO: Should take DID only
         _options: DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError> {
-        if let Some(ddo) = self.cache.get(did.did()) {
+        let did = parsed_did
+            .did()
+            .ok_or(DIDSovError::InvalidDID("DID relative".to_string()))?;
+        if let Some(ddo) = self.cache.get(did) {
             return Ok(DIDResolutionOutput::builder((**ddo).clone()).build());
         }
-        let ledger_response = self.ledger.get_attr(did.did(), "endpoint").await?;
-        let resolution_output = resolve_ddo(&did, &ledger_response).await?;
+        let ledger_response = self.ledger.get_attr(did, "endpoint").await?;
+        let resolution_output = resolve_ddo(did, &ledger_response).await?;
         self.cache.put(
-            did.did().to_string(),
+            did.to_string(),
             Arc::new(resolution_output.did_document().clone()),
         );
         Ok(resolution_output)

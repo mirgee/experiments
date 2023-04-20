@@ -5,7 +5,6 @@ use did_resolver::{
         service::Service,
         types::{did::Did, uri::Uri},
     },
-    did_parser::ParsedDID,
     shared_types::did_document_metadata::DIDDocumentMetadata,
     traits::resolvable::{
         resolution_metadata::DIDResolutionMetadata, resolution_output::DIDResolutionOutput,
@@ -18,9 +17,9 @@ use crate::{
     service::{DidSovServiceType, EndpointDidSov},
 };
 
-fn prepare_ids(did: &ParsedDID) -> Result<(Uri, Did), DIDSovError> {
-    let service_id = Uri::new(did.did().to_string())?;
-    let ddo_id = Did::new(did.did().to_string())?;
+fn prepare_ids(did: &str) -> Result<(Uri, Did), DIDSovError> {
+    let service_id = Uri::new(did.to_string())?;
+    let ddo_id = Did::new(did.to_string())?;
     Ok((service_id, ddo_id))
 }
 
@@ -45,10 +44,8 @@ fn posix_to_datetime(posix_timestamp: i64) -> Option<DateTime<Utc>> {
     }
 }
 
-pub(super) async fn resolve_ddo(
-    did: &ParsedDID,
-    resp: &str,
-) -> Result<DIDResolutionOutput, DIDSovError> {
+// TODO: DID should be Did type
+pub(super) async fn resolve_ddo(did: &str, resp: &str) -> Result<DIDResolutionOutput, DIDSovError> {
     let (service_id, ddo_id) = prepare_ids(did)?;
 
     let service_data = get_data_from_response(&resp)?;
@@ -94,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_prepare_ids() {
-        let did = ParsedDID::parse("did:example:1234567890".to_string()).unwrap();
+        let did = "did:example:1234567890".to_string();
         let (service_id, ddo_id) = prepare_ids(&did).unwrap();
         assert_eq!(service_id.to_string(), "did:example:1234567890");
         assert_eq!(ddo_id.to_string(), "did:example:1234567890");
@@ -137,7 +134,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_resolve_ddo() {
-        let did = ParsedDID::parse("did:example:1234567890".to_string()).unwrap();
+        let did = "did:example:1234567890";
         let resp = r#"{
             "result": {
                 "data": "{\"endpoint\":{\"endpoint\":\"https://example.com\"}}",

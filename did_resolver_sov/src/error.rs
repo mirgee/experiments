@@ -17,6 +17,8 @@ pub enum DIDSovError {
     MethodNotSupported(String),
     #[error("Internal error")]
     InternalError,
+    #[error("Invalid DID: {0}")]
+    InvalidDID(String),
     #[error("AriesVCX Core error: {0}")]
     AriesVcxCoreError(#[from] AriesVcxCoreError),
     #[error("DID Document Builder Error: {0}")]
