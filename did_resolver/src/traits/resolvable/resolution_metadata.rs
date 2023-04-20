@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use super::resolution_error::DIDResolutionErrorType;
+use super::resolution_error::DIDResolutionError;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct DIDResolutionMetadata {
     content_type: Option<String>,
-    error: Option<DIDResolutionErrorType>,
+    error: Option<DIDResolutionError>,
 }
 
 impl DIDResolutionMetadata {
@@ -17,7 +17,7 @@ impl DIDResolutionMetadata {
         self.content_type.as_ref()
     }
 
-    pub fn error(&self) -> Option<&DIDResolutionErrorType> {
+    pub fn error(&self) -> Option<&DIDResolutionError> {
         self.error.as_ref()
     }
 }
@@ -25,7 +25,7 @@ impl DIDResolutionMetadata {
 #[derive(Default)]
 pub struct DIDResolutionMetadataBuilder {
     content_type: Option<String>,
-    error: Option<DIDResolutionErrorType>,
+    error: Option<DIDResolutionError>,
 }
 
 impl DIDResolutionMetadataBuilder {
@@ -34,7 +34,7 @@ impl DIDResolutionMetadataBuilder {
         self
     }
 
-    pub fn error(mut self, error: DIDResolutionErrorType) -> Self {
+    pub fn error(mut self, error: DIDResolutionError) -> Self {
         self.error = Some(error);
         self
     }
