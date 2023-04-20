@@ -266,9 +266,7 @@ mod tests {
         let service_id = Uri::new("did:example:123456789abcdefghi;service-1".to_string())?;
         let service_type = "test-service".to_string();
         let service_endpoint = "https://example.com/service".to_string();
-        let service = ServiceBuilder::new(service_id, service_endpoint)
-            .add_type(service_type)
-            .build()?;
+        let service = ServiceBuilder::new(service_id, service_endpoint, service_type)?.build();
 
         let document = DIDDocumentBuilder::new(id.clone())
             .add_also_known_as(also_known_as.clone())

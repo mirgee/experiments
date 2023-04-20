@@ -30,6 +30,38 @@ impl DIDDocumentMetadata {
     pub fn builder() -> DIDDocumentMetadataBuilder {
         DIDDocumentMetadataBuilder::default()
     }
+
+    pub fn created(&self) -> Option<DateTime<Utc>> {
+        self.created
+    }
+
+    pub fn updated(&self) -> Option<DateTime<Utc>> {
+        self.updated
+    }
+
+    pub fn deactivated(&self) -> Option<bool> {
+        self.deactivated
+    }
+
+    pub fn next_update(&self) -> Option<DateTime<Utc>> {
+        self.next_update
+    }
+
+    pub fn version_id(&self) -> Option<&String> {
+        self.version_id.as_ref()
+    }
+
+    pub fn next_version_id(&self) -> Option<&String> {
+        self.next_version_id.as_ref()
+    }
+
+    pub fn equivalent_id(&self) -> &[Did] {
+        self.equivalent_id.as_ref()
+    }
+
+    pub fn canonical_id(&self) -> Option<&Did> {
+        self.canonical_id.as_ref()
+    }
 }
 
 #[derive(Default)]

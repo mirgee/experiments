@@ -84,3 +84,82 @@ pub(super) async fn resolve_ddo(
         .did_resolution_metadata(resolution_metadata)
         .build())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::TimeZone;
+
+    #[test]
+    fn test_prepare_ids() {
+        let did = ParsedDID::parse("did:example:1234567890".to_string()).unwrap();
+        let (service_id, ddo_id) = prepare_ids(&did).unwrap();
+        assert_eq!(service_id.to_string(), "did:example:1234567890");
+        assert_eq!(ddo_id.to_string(), "did:example:1234567890");
+    }
+
+    #[test]
+    fn test_get_data_from_response() {
+        let resp = r#"{
+            "result": {
+                "data": "{\"endpoint\":{\"endpoint\":\"https://example.com\"}}"
+            }
+        }"#;
+        let data = get_data_from_response(&resp).unwrap();
+        assert_eq!(
+            data["endpoint"]["endpoint"].as_str().unwrap(),
+            "https://example.com"
+        );
+    }
+
+    #[test]
+    fn test_get_txn_time_from_response() {
+        let resp = r#"{
+            "result": {
+                "txnTime": 1629272938
+            }
+        }"#;
+        let txn_time = get_txn_time_from_response(&resp).unwrap();
+        assert_eq!(txn_time, 1629272938);
+    }
+
+    #[test]
+    fn test_posix_to_datetime() {
+        let posix_timestamp = 1629272938;
+        let datetime = posix_to_datetime(posix_timestamp).unwrap();
+        assert_eq!(
+            datetime,
+            chrono::Utc.timestamp_opt(posix_timestamp, 0).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_resolve_ddo() {
+        let did = ParsedDID::parse("did:example:1234567890".to_string()).unwrap();
+        let resp = r#"{
+            "result": {
+                "data": "{\"endpoint\":{\"endpoint\":\"https://example.com\"}}",
+                "txnTime": 1629272938
+            }
+        }"#;
+        let resolution_output = resolve_ddo(&did, &resp).await.unwrap();
+        let ddo = resolution_output.did_document().clone();
+        assert_eq!(ddo.id().to_string(), "did:example:1234567890");
+        assert_eq!(ddo.service()[0].id().to_string(), "did:example:1234567890");
+        assert_eq!(
+            ddo.service()[0].endpoint().to_string(),
+            "https://example.com"
+        );
+        assert_eq!(
+            resolution_output.did_document_metadata().updated().unwrap(),
+            chrono::Utc.timestamp_opt(1629272938, 0).unwrap()
+        );
+        assert_eq!(
+            resolution_output
+                .did_resolution_metadata()
+                .content_type()
+                .unwrap(),
+            "application/did+json"
+        );
+    }
+}

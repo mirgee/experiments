@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use crate::{
     error::ParseError,
@@ -117,5 +117,13 @@ impl ParsedDID {
                 )
             })
             .collect()
+    }
+}
+
+impl FromStr for ParsedDID {
+    type Err = ParseError;
+
+    fn from_str(did_url: &str) -> Result<Self, Self::Err> {
+        Self::parse(did_url.to_string())
     }
 }

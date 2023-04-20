@@ -12,6 +12,14 @@ impl DIDResolutionMetadata {
     pub fn builder() -> DIDResolutionMetadataBuilder {
         DIDResolutionMetadataBuilder::default()
     }
+
+    pub fn content_type(&self) -> Option<&String> {
+        self.content_type.as_ref()
+    }
+
+    pub fn error(&self) -> Option<&DIDResolutionErrorType> {
+        self.error.as_ref()
+    }
 }
 
 #[derive(Default)]
