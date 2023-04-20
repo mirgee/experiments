@@ -2,7 +2,7 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use did_resolver::{
     did_doc_builder::schema::{
         did_doc::DIDDocument,
-        service::ServiceBuilder,
+        service::Service,
         types::{did::Did, uri::Uri},
     },
     did_parser::ParsedDID,
@@ -56,10 +56,10 @@ pub(super) async fn resolve_ddo(
     let datetime = posix_to_datetime(txn_time);
 
     let service = {
-        let mut service_builder = ServiceBuilder::new(service_id, endpoint.endpoint);
+        let mut service_builder = Service::builder(service_id, endpoint.endpoint)?;
         for t in endpoint.types {
             if t != DidSovServiceType::Unknown {
-                service_builder = service_builder.add_type(t.to_string());
+                service_builder = service_builder.add_type(t.to_string())?;
             };
         }
         service_builder.build()?
@@ -147,7 +147,7 @@ mod tests {
         assert_eq!(ddo.id().to_string(), "did:example:1234567890");
         assert_eq!(ddo.service()[0].id().to_string(), "did:example:1234567890");
         assert_eq!(
-            ddo.service()[0].endpoint().to_string(),
+            ddo.service()[0].service_endpoint().to_string(),
             "https://example.com"
         );
         assert_eq!(

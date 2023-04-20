@@ -91,7 +91,7 @@ dependencies = [
 
 [[package]]
 name = "agency_client"
-version = "0.54.0"
+version = "0.54.1"
 dependencies = [
  "android_logger",
  "async-trait",
@@ -199,7 +199,7 @@ dependencies = [
 
 [[package]]
 name = "aries-vcx"
-version = "0.54.0"
+version = "0.54.1"
 dependencies = [
  "agency_client",
  "android_logger",
@@ -1172,7 +1172,7 @@ dependencies = [
 
 [[package]]
 name = "diddoc"
-version = "0.54.0"
+version = "0.54.1"
 dependencies = [
  "serde",
  "serde_derive",
@@ -2418,7 +2418,7 @@ dependencies = [
 
 [[package]]
 name = "messages"
-version = "0.54.0"
+version = "0.54.1"
 dependencies = [
  "base64 0.10.1",
  "chrono",
@@ -3510,7 +3510,7 @@ dependencies = [
 
 [[package]]
 name = "shared_vcx"
-version = "0.54.0"
+version = "0.54.1"
 dependencies = [
  "bs58 0.4.0",
  "lazy_static",
