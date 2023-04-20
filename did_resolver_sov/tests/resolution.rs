@@ -12,7 +12,7 @@ use did_resolver::{
     did_parser::ParsedDID,
     traits::resolvable::{resolution_options::DIDResolutionOptions, DIDResolvable},
 };
-use did_resolver_sov::resolver::DIDSovResolver;
+use did_resolver_sov::resolution::DIDSovResolver;
 
 #[tokio::test]
 async fn write_service_on_ledger_and_resolve_did_doc() {

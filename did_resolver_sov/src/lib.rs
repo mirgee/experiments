@@ -1,3 +1,3 @@
 pub mod error;
-pub mod resolver;
+pub mod resolution;
 pub mod service;
