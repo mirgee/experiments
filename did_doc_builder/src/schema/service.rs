@@ -22,6 +22,10 @@ pub struct Service {
 }
 
 impl Service {
+    pub fn builder() -> ServiceBuilder {
+        ServiceBuilder::default()
+    }
+
     pub fn id(&self) -> &Uri {
         &self.id
     }

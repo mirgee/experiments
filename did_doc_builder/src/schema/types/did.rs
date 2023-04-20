@@ -4,7 +4,7 @@ use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;
 
-#[derive(Serialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, Hash, Default)]
 pub struct Did(String);
 
 impl Did {

@@ -27,6 +27,10 @@ pub struct VerificationMethod {
 }
 
 impl VerificationMethod {
+    pub fn builder() -> VerificationMethodBuilder {
+        VerificationMethodBuilder::default()
+    }
+
     pub fn id(&self) -> &DidUrl {
         &self.id
     }

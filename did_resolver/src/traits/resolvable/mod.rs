@@ -13,7 +13,7 @@ use self::{resolution_options::DIDResolutionOptions, resolution_output::DIDResol
 pub trait DIDResolvable {
     async fn resolve(
         &mut self,
-        did: ParsedDID,
+        did: ParsedDID, // TODO: should be DID
         options: DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError>;
 }

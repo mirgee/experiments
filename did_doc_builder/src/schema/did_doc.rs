@@ -41,6 +41,10 @@ pub struct DIDDocument {
 }
 
 impl DIDDocument {
+    pub fn builder() -> DIDDocumentBuilder {
+        DIDDocumentBuilder::default()
+    }
+
     pub fn id(&self) -> &Did {
         &self.id
     }

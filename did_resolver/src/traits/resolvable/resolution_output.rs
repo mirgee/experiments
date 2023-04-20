@@ -13,25 +13,12 @@ pub struct DIDResolutionOutput {
 }
 
 impl DIDResolutionOutput {
-    pub fn new(did_document: DIDDocument) -> Self {
-        DIDResolutionOutput {
+    pub fn builder(did_document: DIDDocument) -> DIDResolutionOutputBuilder {
+        DIDResolutionOutputBuilder {
             did_document,
-            did_resolution_metadata: DIDResolutionMetadata::default(),
-            did_document_metadata: DIDDocumentMetadata::default(),
+            did_resolution_metadata: None,
+            did_document_metadata: None,
         }
-    }
-
-    pub fn set_did_resolution_metadata(
-        mut self,
-        did_resolution_metadata: DIDResolutionMetadata,
-    ) -> Self {
-        self.did_resolution_metadata = did_resolution_metadata;
-        self
-    }
-
-    pub fn set_did_document_metadata(mut self, did_document_metadata: DIDDocumentMetadata) -> Self {
-        self.did_document_metadata = did_document_metadata;
-        self
     }
 
     pub fn did_document(&self) -> &DIDDocument {
@@ -44,5 +31,34 @@ impl DIDResolutionOutput {
 
     pub fn did_document_metadata(&self) -> &DIDDocumentMetadata {
         &self.did_document_metadata
+    }
+}
+
+pub struct DIDResolutionOutputBuilder {
+    did_document: DIDDocument,
+    did_resolution_metadata: Option<DIDResolutionMetadata>,
+    did_document_metadata: Option<DIDDocumentMetadata>,
+}
+
+impl DIDResolutionOutputBuilder {
+    pub fn did_resolution_metadata(
+        mut self,
+        did_resolution_metadata: DIDResolutionMetadata,
+    ) -> Self {
+        self.did_resolution_metadata = Some(did_resolution_metadata);
+        self
+    }
+
+    pub fn did_document_metadata(mut self, did_document_metadata: DIDDocumentMetadata) -> Self {
+        self.did_document_metadata = Some(did_document_metadata);
+        self
+    }
+
+    pub fn build(self) -> DIDResolutionOutput {
+        DIDResolutionOutput {
+            did_document: self.did_document,
+            did_resolution_metadata: self.did_resolution_metadata.unwrap_or_default(),
+            did_document_metadata: self.did_document_metadata.unwrap_or_default(),
+        }
     }
 }
