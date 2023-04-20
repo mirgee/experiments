@@ -1,5 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
+// use did_parser::is_valid_did_url;
 use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::error::DIDDocumentBuilderError;

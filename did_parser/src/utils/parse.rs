@@ -36,6 +36,9 @@ pub(crate) fn parse_did_method_id(
 ) -> Result<(DIDRange, DIDRange, DIDRange), ParseError> {
     // DID = "did:" method ":" method-specific-id
     let method_start = did_url.find(':').ok_or(ParseError::InvalidDIDURL)?;
+    if &did_url[..method_start] != "did" {
+        return Err(ParseError::InvalidDIDURL);
+    }
     let method_end = did_url[method_start + 1..]
         .find(':')
         .map(|i| i + method_start + 1)
