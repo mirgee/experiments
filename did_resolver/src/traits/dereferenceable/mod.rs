@@ -15,7 +15,7 @@ use self::{
 pub trait DIDDereferenceable: DIDResolvable {
     async fn dereference(
         &mut self,
-        did: ParsedDIDUrl, // TODO: Should be DidUrl
+        did: ParsedDIDUrl,
         options: DIDDereferencingOptions,
     ) -> Result<DIDDereferencingOutput, GenericError>;
 }

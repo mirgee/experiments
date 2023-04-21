@@ -1139,6 +1139,7 @@ dependencies = [
  "once_cell",
  "ouroboros",
  "regex",
+ "serde",
 ]
 
 [[package]]

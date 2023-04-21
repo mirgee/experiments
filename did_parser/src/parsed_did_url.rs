@@ -1,5 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use crate::{
     error::ParseError,
     utils::parse::{parse_did_method_id, parse_key_value, parse_path},
@@ -78,7 +80,7 @@ impl ParsedDIDUrl {
             && queries.is_empty()
             && params.is_empty()
         {
-            return Err(ParseError::InvalidDIDURL);
+            return Err(ParseError::InvalidInput(did_url));
         }
 
         Ok(ParsedDIDUrl {
@@ -147,5 +149,24 @@ impl FromStr for ParsedDIDUrl {
 
     fn from_str(did_url: &str) -> Result<Self, Self::Err> {
         Self::parse(did_url.to_string())
+    }
+}
+
+impl Serialize for ParsedDIDUrl {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.did_url)
+    }
+}
+
+impl<'de> Deserialize<'de> for ParsedDIDUrl {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let did_url = String::deserialize(deserializer)?;
+        ParsedDIDUrl::from_str(&did_url).map_err(serde::de::Error::custom)
     }
 }

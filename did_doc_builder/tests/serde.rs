@@ -2,9 +2,10 @@ use std::str::FromStr;
 
 use did_doc_builder::schema::{
     did_doc::DIDDocument,
-    types::{did::Did, did_url::DidUrl, jsonwebkey::JsonWebKey, uri::Uri},
+    types::{did::Did, jsonwebkey::JsonWebKey, uri::Uri},
     verification_method::{VerificationMethodAlias, VerificationMethodBuilder},
 };
+use did_parser::ParsedDIDUrl;
 use serde_json::Value;
 
 const VALID_DID_DOC_JSON: &str = r##"
@@ -85,12 +86,12 @@ fn test_deserialization() {
 
     let controller = Did::from_str("did:web:did.actor:alice").unwrap();
 
-    let pk_id = DidUrl::from_str(
+    let pk_id = ParsedDIDUrl::from_str(
         "did:web:did.actor:alice#z6MkrmNwty5ajKtFqc1U48oL2MMLjWjartwc5sf2AihZwXDN",
     )
     .unwrap();
 
-    let vm1_id = DidUrl::from_str("#g1").unwrap();
+    let vm1_id = ParsedDIDUrl::from_str("#g1").unwrap();
     let vm1 = VerificationMethodBuilder::new(
         vm1_id.clone(),
         controller.clone(),
@@ -109,7 +110,7 @@ fn test_deserialization() {
     .build()
     .unwrap();
 
-    let vm2_id = DidUrl::from_str("#g2").unwrap();
+    let vm2_id = ParsedDIDUrl::from_str("#g2").unwrap();
     let vm2 = VerificationMethodBuilder::new(
         vm2_id.clone(),
         controller.clone(),
@@ -173,9 +174,10 @@ fn test_deserialization() {
         )])
     );
 
-    let ka1_id =
-        DidUrl::from_str("did:web:did.actor:alice#zC8GybikEfyNaausDA4mkT4egP7SNLx2T1d1kujLQbcP6h")
-            .unwrap();
+    let ka1_id = ParsedDIDUrl::from_str(
+        "did:web:did.actor:alice#zC8GybikEfyNaausDA4mkT4egP7SNLx2T1d1kujLQbcP6h",
+    )
+    .unwrap();
     let ka1 = VerificationMethodBuilder::new(
         ka1_id.clone(),
         controller.clone(),

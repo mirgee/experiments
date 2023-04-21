@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
+use did_parser::ParsedDIDUrl;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use super::{
     service::Service,
-    types::{did::Did, did_url::DidUrl, uri::Uri},
+    types::{did::Did, uri::Uri},
     utils::OneOrList,
     verification_method::{VerificationMethod, VerificationMethodAlias},
 };
@@ -134,7 +135,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_authentication_reference(mut self, reference: DidUrl) -> Self {
+    pub fn add_authentication_reference(mut self, reference: ParsedDIDUrl) -> Self {
         self.authentication
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -148,7 +149,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_assertion_method_reference(mut self, reference: DidUrl) -> Self {
+    pub fn add_assertion_method_reference(mut self, reference: ParsedDIDUrl) -> Self {
         self.assertion_method
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -162,7 +163,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_key_agreement_refrence(mut self, reference: DidUrl) -> Self {
+    pub fn add_key_agreement_refrence(mut self, reference: ParsedDIDUrl) -> Self {
         self.key_agreement
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -178,7 +179,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_invocation_refrence(mut self, reference: DidUrl) -> Self {
+    pub fn add_capability_invocation_refrence(mut self, reference: ParsedDIDUrl) -> Self {
         self.capability_invocation
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -194,7 +195,7 @@ impl DIDDocumentBuilder {
         self
     }
 
-    pub fn add_capability_delegation_refrence(mut self, reference: DidUrl) -> Self {
+    pub fn add_capability_delegation_refrence(mut self, reference: ParsedDIDUrl) -> Self {
         self.capability_delegation
             .push(VerificationMethodAlias::VerificationMethodReference(
                 reference,
@@ -248,14 +249,14 @@ mod tests {
         let controller = Did::new("did:example:controller".to_string())?;
 
         let verification_method = VerificationMethodBuilder::new(
-            DidUrl::new("did:example:vm1".to_string())?,
+            ParsedDIDUrl::parse("did:example:vm1".to_string())?,
             Did::new("did:example:vm2".to_string())?,
             "typevm".to_string(),
         )
         .build()?;
-        let authentication_reference = DidUrl::new("did:example:authref".to_string())?;
+        let authentication_reference = ParsedDIDUrl::parse("did:example:authref".to_string())?;
         let assertion_method = VerificationMethodBuilder::new(
-            DidUrl::new("did:example:am1".to_string())?,
+            ParsedDIDUrl::parse("did:example:am1".to_string())?,
             Did::new("did:example:am2".to_string())?,
             "typeam".to_string(),
         )

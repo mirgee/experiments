@@ -1,23 +1,24 @@
 use std::collections::HashMap;
 
+use did_parser::ParsedDIDUrl;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::DIDDocumentBuilderError;
 
-use super::types::{did::Did, did_url::DidUrl, jsonwebkey::JsonWebKey, multibase::Multibase};
+use super::types::{did::Did, jsonwebkey::JsonWebKey, multibase::Multibase};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum VerificationMethodAlias {
     VerificationMethod(VerificationMethod),
-    VerificationMethodReference(DidUrl),
+    VerificationMethodReference(ParsedDIDUrl),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct VerificationMethod {
-    id: DidUrl,
+    id: ParsedDIDUrl,
     controller: Did,
     r#type: String,
     public_key_multibase: Option<Multibase>,
@@ -33,7 +34,7 @@ impl VerificationMethod {
         VerificationMethodBuilder::default()
     }
 
-    pub fn id(&self) -> &DidUrl {
+    pub fn id(&self) -> &ParsedDIDUrl {
         &self.id
     }
 
@@ -60,7 +61,7 @@ impl VerificationMethod {
 
 #[derive(Debug, Default)]
 pub struct VerificationMethodBuilder {
-    id: DidUrl,
+    id: ParsedDIDUrl,
     controller: Did,
     r#type: String,
     public_key_multibase: Option<Multibase>,
@@ -69,7 +70,7 @@ pub struct VerificationMethodBuilder {
 }
 
 impl VerificationMethodBuilder {
-    pub fn new(id: DidUrl, controller: Did, r#type: String) -> Self {
+    pub fn new(id: ParsedDIDUrl, controller: Did, r#type: String) -> Self {
         Self {
             id,
             r#type,
@@ -120,9 +121,10 @@ mod tests {
         Did::new("did:example:123456789abcdefghi".to_string()).unwrap()
     }
 
-    fn create_valid_did_url() -> DidUrl {
-        DidUrl::new("did:example:123456789abcdefghi#fragment".to_string()).unwrap()
+    fn create_valid_did_url() -> ParsedDIDUrl {
+        ParsedDIDUrl::parse("did:example:123456789abcdefghi#fragment".to_string()).unwrap()
     }
+
     fn create_valid_multibase() -> Multibase {
         Multibase::new("zQmWvQxTqbG2Z9HPJgG57jjwR154cKhbtJenbyYTWkjgF3e".to_string()).unwrap()
     }
