@@ -62,3 +62,85 @@ where
     }
     Ok(types)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::from_str;
+    use std::iter::FromIterator;
+
+    #[test]
+    fn test_deserialize_endpoint_did_sov() {
+        let json = r#"{
+            "endpoint": "https://example.com",
+            "routingKeys": ["key1", "key2"],
+            "types": ["endpoint", "did-communication"]
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert_eq!(endpoint_did_sov.routing_keys, vec!["key1", "key2"]);
+        assert_eq!(
+            endpoint_did_sov.types,
+            HashSet::from_iter(vec![
+                DidSovServiceType::Endpoint,
+                DidSovServiceType::DidCommunication,
+            ])
+        );
+
+        let json = r#"{
+            "endpoint": "https://example.com",
+            "routingKeys": ["key1", "key2"],
+            "types": ["endpoint", "DIDComm"]
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert_eq!(endpoint_did_sov.routing_keys, vec!["key1", "key2"]);
+        assert_eq!(
+            endpoint_did_sov.types,
+            HashSet::from_iter(vec![
+                DidSovServiceType::Endpoint,
+                DidSovServiceType::DIDComm,
+            ])
+        );
+
+        let json = r#"{
+            "endpoint": "https://example.com",
+            "routingKeys": ["key1", "key2"],
+            "types": ["endpoint", "endpoint"]
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert_eq!(endpoint_did_sov.routing_keys, vec!["key1", "key2"]);
+        assert_eq!(
+            endpoint_did_sov.types,
+            HashSet::from_iter(vec![DidSovServiceType::Endpoint,])
+        );
+
+        let json = r#"{
+            "endpoint": "https://example.com",
+            "routingKeys": ["key1", "key2"],
+            "types": ["invalid"]
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert_eq!(endpoint_did_sov.routing_keys, vec!["key1", "key2"]);
+        assert_eq!(endpoint_did_sov.types, default_didsov_service_types());
+
+        let json = r#"{
+            "endpoint": "https://example.com",
+            "routingKeys": ["key1", "key2"]
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert_eq!(endpoint_did_sov.routing_keys, vec!["key1", "key2"]);
+        assert_eq!(endpoint_did_sov.types, default_didsov_service_types());
+
+        let json = r#"{
+            "endpoint": "https://example.com"
+        }"#;
+        let endpoint_did_sov: EndpointDidSov = from_str(json).unwrap();
+        assert_eq!(endpoint_did_sov.endpoint, "https://example.com");
+        assert!(endpoint_did_sov.routing_keys.is_empty());
+        assert_eq!(endpoint_did_sov.types, default_didsov_service_types());
+    }
+}
