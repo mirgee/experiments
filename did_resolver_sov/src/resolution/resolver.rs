@@ -4,7 +4,7 @@ use aries_vcx_core::ledger::base_ledger::BaseLedger;
 use async_trait::async_trait;
 use did_resolver::{
     did_doc_builder::schema::did_doc::DIDDocument,
-    did_parser::ParsedDID,
+    did_parser::ParsedDIDUrl,
     error::GenericError,
     traits::resolvable::{
         resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
@@ -35,7 +35,7 @@ impl DIDSovResolver {
 impl DIDResolvable for DIDSovResolver {
     async fn resolve(
         &mut self,
-        parsed_did: ParsedDID, // TODO: Should take DID only
+        parsed_did: ParsedDIDUrl, // TODO: Should take DID only
         _options: DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError> {
         let did = parsed_did

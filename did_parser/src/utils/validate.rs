@@ -1,7 +1,7 @@
-use crate::ParsedDID;
+use crate::ParsedDIDUrl;
 
 pub fn is_valid_did(did: &str) -> bool {
-    match ParsedDID::parse(did.to_string()) {
+    match ParsedDIDUrl::parse(did.to_string()) {
         Ok(parsed_did) => {
             parsed_did.path().is_none()
                 && parsed_did.fragment().is_none()
@@ -13,7 +13,7 @@ pub fn is_valid_did(did: &str) -> bool {
 }
 
 pub fn is_valid_did_url(did_url: &str) -> bool {
-    ParsedDID::parse(did_url.to_string()).is_ok()
+    ParsedDIDUrl::parse(did_url.to_string()).is_ok()
 }
 
 #[cfg(test)]

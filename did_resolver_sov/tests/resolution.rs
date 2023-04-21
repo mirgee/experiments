@@ -9,7 +9,7 @@ use aries_vcx::{
     utils::devsetup::SetupProfile,
 };
 use did_resolver::{
-    did_parser::ParsedDID,
+    did_parser::ParsedDIDUrl,
     traits::resolvable::{resolution_options::DIDResolutionOptions, DIDResolvable},
 };
 use did_resolver_sov::resolution::DIDSovResolver;
@@ -30,7 +30,7 @@ async fn write_service_on_ledger_and_resolve_did_doc() {
             DIDSovResolver::new(init.profile.inject_ledger(), NonZeroUsize::new(10).unwrap());
         let did_doc = resolver
             .resolve(
-                ParsedDID::parse(did.clone()).unwrap(),
+                ParsedDIDUrl::parse(did.clone()).unwrap(),
                 DIDResolutionOptions::default(),
             )
             .await

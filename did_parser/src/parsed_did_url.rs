@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[derive(Default, Debug, Clone, PartialEq)]
-pub struct ParsedDID {
+pub struct ParsedDIDUrl {
     did_url: String,
     did: Option<DIDRange>,
     method: Option<DIDRange>,
@@ -18,7 +18,7 @@ pub struct ParsedDID {
     params: HashMap<DIDRange, DIDRange>,
 }
 
-impl ParsedDID {
+impl ParsedDIDUrl {
     pub fn parse(did_url: String) -> Result<Self, ParseError> {
         let (did, method, id) = if did_url.starts_with('#')
             || did_url.starts_with('/')
@@ -81,7 +81,7 @@ impl ParsedDID {
             return Err(ParseError::InvalidDIDURL);
         }
 
-        Ok(ParsedDID {
+        Ok(ParsedDIDUrl {
             did_url,
             did,
             method,
@@ -142,7 +142,7 @@ impl ParsedDID {
     }
 }
 
-impl FromStr for ParsedDID {
+impl FromStr for ParsedDIDUrl {
     type Err = ParseError;
 
     fn from_str(did_url: &str) -> Result<Self, Self::Err> {
