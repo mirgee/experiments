@@ -49,7 +49,7 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     use did_resolver::did_doc_builder::schema::did_doc::DIDDocumentBuilder;
-    use mockall::{automock, predicate::*};
+    use mockall::{automock, predicate::eq};
     use std::{error::Error, pin::Pin};
 
     struct DummyDIDResolver;

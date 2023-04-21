@@ -138,7 +138,7 @@ mod tests {
             }
         }"#;
         let resolution_output = resolve_ddo(&did, &resp).await.unwrap();
-        let ddo = resolution_output.did_document().clone();
+        let ddo = resolution_output.did_document();
         assert_eq!(ddo.id().to_string(), "did:example:1234567890");
         assert_eq!(ddo.service()[0].id().to_string(), "did:example:1234567890");
         assert_eq!(

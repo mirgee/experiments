@@ -1,3 +1,5 @@
+use std::pin::Pin;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{num::NonZeroUsize, thread};
 
@@ -8,9 +10,12 @@ use aries_vcx::{
     },
     utils::devsetup::SetupProfile,
 };
+use aries_vcx_core::ledger::base_ledger::MockBaseLedger;
 use did_resolver::did_parser::ParsedDID;
+use did_resolver::traits::resolvable::resolution_output::DIDResolutionOutput;
 use did_resolver::traits::resolvable::{resolution_options::DIDResolutionOptions, DIDResolvable};
 use did_resolver_sov::resolution::DIDSovResolver;
+use mockall::predicate::eq;
 
 #[tokio::test]
 async fn write_service_on_ledger_and_resolve_did_doc() {
@@ -34,6 +39,73 @@ async fn write_service_on_ledger_and_resolve_did_doc() {
             .await
             .unwrap();
         assert_eq!(did_doc.did_document().id().to_string(), did);
+    })
+    .await;
+}
+
+#[tokio::test]
+async fn test_resolver_caching_behavior() {
+    SetupProfile::run(|init| async move {
+        async fn resolve_did_doc(
+            did: String,
+            resolver: &mut DIDSovResolver,
+        ) -> DIDResolutionOutput {
+            let did_doc = resolver
+                .resolve(
+                    ParsedDID::parse(did.clone()).unwrap(),
+                    DIDResolutionOptions::default(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(did_doc.did_document().id().to_string(), did);
+            did_doc
+        }
+
+        let did = format!("did:sov:{}", init.institution_did);
+        let cache_size = NonZeroUsize::new(2).unwrap();
+        let actual_ledger_response = init
+            .profile
+            .inject_ledger()
+            .get_attr(&did, "endpoint")
+            .await
+            .unwrap();
+        let mut mock_ledger = MockBaseLedger::new();
+        mock_ledger
+            .expect_get_attr()
+            .with(eq(did.clone()), eq("endpoint"))
+            .once()
+            .return_once(move |_, _| {
+                let future = async move { Ok(actual_ledger_response.clone()) };
+                Pin::from(Box::new(future))
+            });
+
+        let arc_mock_ledger = Arc::new(mock_ledger);
+        let mut resolver = DIDSovResolver::new(arc_mock_ledger, cache_size);
+
+        let did_doc = resolve_did_doc(did.clone(), &mut resolver).await;
+        let did_doc_cached = resolve_did_doc(did, &mut resolver).await;
+
+        assert_eq!(did_doc.did_document(), did_doc_cached.did_document());
+    })
+    .await;
+}
+
+#[tokio::test]
+async fn test_error_handling_during_resolution() {
+    SetupProfile::run(|init| async move {
+        let did = format!("did:unknownmethod:{}", init.institution_did);
+
+        let cache_size = NonZeroUsize::new(2).unwrap();
+        let mut resolver = DIDSovResolver::new(init.profile.inject_ledger(), cache_size);
+
+        let result = resolver
+            .resolve(
+                ParsedDID::parse(did.clone()).unwrap(),
+                DIDResolutionOptions::default(),
+            )
+            .await;
+
+        assert!(result.is_err());
     })
     .await;
 }

@@ -35,12 +35,6 @@ impl std::error::Error for DIDDocumentBuilderError {
 
 impl From<serde_json::Error> for DIDDocumentBuilderError {
     fn from(error: serde_json::Error) -> Self {
-        DIDDocumentBuilderError::InvalidInput(error.to_string())
-    }
-}
-
-impl From<ParseError> for DIDDocumentBuilderError {
-    fn from(error: ParseError) -> Self {
-        DIDDocumentBuilderError::InvalidInput(error.to_string())
+        DIDDocumentBuilderError::SerdeError(error)
     }
 }

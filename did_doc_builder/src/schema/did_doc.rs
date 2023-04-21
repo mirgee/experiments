@@ -237,37 +237,40 @@ impl DIDDocumentBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        error::DIDDocumentBuilderError,
-        schema::{service::ServiceBuilder, verification_method::VerificationMethodBuilder},
-    };
+    use crate::schema::{service::ServiceBuilder, verification_method::VerificationMethodBuilder};
 
     #[test]
-    fn test_did_document_builder() -> Result<(), DIDDocumentBuilderError> {
-        let id = ParsedDID::parse("did:example:123456789abcdefghi".to_string())?;
-        let also_known_as = Uri::new("https://example.com".to_string())?;
-        let controller = ParsedDID::parse("did:example:controller".to_string())?;
+    fn test_did_document_builder() {
+        let id = ParsedDID::parse("did:example:123456789abcdefghi".to_string()).unwrap();
+        let also_known_as = Uri::new("https://example.com".to_string()).unwrap();
+        let controller = ParsedDID::parse("did:example:controller".to_string()).unwrap();
 
         let verification_method = VerificationMethodBuilder::new(
-            ParsedDIDUrl::parse("did:example:vm1".to_string())?,
-            ParsedDID::parse("did:example:vm2".to_string())?,
+            ParsedDIDUrl::parse("did:example:vm1".to_string()).unwrap(),
+            ParsedDID::parse("did:example:vm2".to_string()).unwrap(),
             "typevm".to_string(),
         )
-        .build()?;
-        let authentication_reference = ParsedDIDUrl::parse("did:example:authref".to_string())?;
+        .build()
+        .unwrap();
+        let authentication_reference =
+            ParsedDIDUrl::parse("did:example:authref".to_string()).unwrap();
         let assertion_method = VerificationMethodBuilder::new(
-            ParsedDIDUrl::parse("did:example:am1".to_string())?,
-            ParsedDID::parse("did:example:am2".to_string())?,
+            ParsedDIDUrl::parse("did:example:am1".to_string()).unwrap(),
+            ParsedDID::parse("did:example:am2".to_string()).unwrap(),
             "typeam".to_string(),
         )
-        .build()?;
+        .build()
+        .unwrap();
 
-        let service_id = Uri::new("did:example:123456789abcdefghi;service-1".to_string())?;
+        let service_id = Uri::new("did:example:123456789abcdefghi;service-1".to_string()).unwrap();
         let service_type = "test-service".to_string();
         let service_endpoint = "https://example.com/service".to_string();
-        let service = ServiceBuilder::new(service_id, service_endpoint)?
-            .add_type(service_type)?
-            .build()?;
+        let service = ServiceBuilder::new(service_id, service_endpoint)
+            .unwrap()
+            .add_type(service_type)
+            .unwrap()
+            .build()
+            .unwrap();
 
         let document = DIDDocumentBuilder::new(id.clone())
             .add_also_known_as(also_known_as.clone())
@@ -342,7 +345,5 @@ mod tests {
             ]
         );
         assert_eq!(document.service(), &[service]);
-
-        Ok(())
     }
 }
