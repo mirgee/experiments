@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use did_parser::ParsedDIDUrl;
+use did_parser::{ParsedDID, ParsedDIDUrl};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::DIDDocumentBuilderError;
 
-use super::types::{did::Did, jsonwebkey::JsonWebKey, multibase::Multibase};
+use super::types::{jsonwebkey::JsonWebKey, multibase::Multibase};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(untagged)]
@@ -19,7 +19,7 @@ pub enum VerificationMethodAlias {
 #[serde(rename_all = "camelCase")]
 pub struct VerificationMethod {
     id: ParsedDIDUrl,
-    controller: Did,
+    controller: ParsedDID,
     r#type: String,
     public_key_multibase: Option<Multibase>,
     public_key_jwk: Option<JsonWebKey>,
@@ -38,7 +38,7 @@ impl VerificationMethod {
         &self.id
     }
 
-    pub fn controller(&self) -> &Did {
+    pub fn controller(&self) -> &ParsedDID {
         &self.controller
     }
 
@@ -62,7 +62,7 @@ impl VerificationMethod {
 #[derive(Debug, Default)]
 pub struct VerificationMethodBuilder {
     id: ParsedDIDUrl,
-    controller: Did,
+    controller: ParsedDID,
     r#type: String,
     public_key_multibase: Option<Multibase>,
     public_key_jwk: Option<JsonWebKey>,
@@ -70,7 +70,7 @@ pub struct VerificationMethodBuilder {
 }
 
 impl VerificationMethodBuilder {
-    pub fn new(id: ParsedDIDUrl, controller: Did, r#type: String) -> Self {
+    pub fn new(id: ParsedDIDUrl, controller: ParsedDID, r#type: String) -> Self {
         Self {
             id,
             r#type,
@@ -117,8 +117,8 @@ impl VerificationMethodBuilder {
 mod tests {
     use super::*;
 
-    fn create_valid_did() -> Did {
-        Did::new("did:example:123456789abcdefghi".to_string()).unwrap()
+    fn create_valid_did() -> ParsedDID {
+        ParsedDID::parse("did:example:123456789abcdefghi".to_string()).unwrap()
     }
 
     fn create_valid_did_url() -> ParsedDIDUrl {

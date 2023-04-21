@@ -1,10 +1,11 @@
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::{error::ParseError, is_valid_did, utils::parse::parse_did_method_id, DIDRange};
 
-#[derive(Default, Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ParsedDID {
     did: String,
     method: DIDRange,
@@ -40,6 +41,12 @@ impl FromStr for ParsedDID {
 
     fn from_str(did: &str) -> Result<Self, Self::Err> {
         Self::parse(did.to_string())
+    }
+}
+
+impl Display for ParsedDID {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.did)
     }
 }
 

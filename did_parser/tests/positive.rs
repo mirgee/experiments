@@ -1,4 +1,4 @@
-use did_parser::ParsedDID;
+use did_parser::ParsedDIDUrl;
 use std::collections::HashMap;
 
 macro_rules! test_cases_positive {
@@ -6,7 +6,7 @@ macro_rules! test_cases_positive {
         $(
             #[test]
             fn $name() {
-                let parsed_did = ParsedDID::parse($input.to_string()).unwrap();
+                let parsed_did = ParsedDIDUrl::parse($input.to_string()).unwrap();
 
                 assert_eq!(parsed_did.did(), $expected_did, "DID");
                 assert_eq!(parsed_did.method(), $expected_method, "Method");

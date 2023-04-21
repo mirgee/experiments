@@ -4,7 +4,7 @@ use aries_vcx_core::ledger::base_ledger::BaseLedger;
 use async_trait::async_trait;
 use did_resolver::{
     did_doc_builder::schema::did_doc::DIDDocument,
-    did_parser::ParsedDIDUrl,
+    did_parser::ParsedDID,
     error::GenericError,
     traits::resolvable::{
         resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput,
@@ -12,8 +12,6 @@ use did_resolver::{
     },
 };
 use lru::LruCache;
-
-use crate::error::DIDSovError;
 
 use super::utils::resolve_ddo;
 
@@ -35,12 +33,10 @@ impl DIDSovResolver {
 impl DIDResolvable for DIDSovResolver {
     async fn resolve(
         &mut self,
-        parsed_did: ParsedDIDUrl, // TODO: Should take DID only
+        parsed_did: ParsedDID,
         _options: DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError> {
-        let did = parsed_did
-            .did()
-            .ok_or(DIDSovError::InvalidDID("DID relative".to_string()))?;
+        let did = parsed_did.did();
         if let Some(ddo) = self.cache.get(did) {
             return Ok(DIDResolutionOutput::builder((**ddo).clone()).build());
         }

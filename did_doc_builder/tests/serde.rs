@@ -2,10 +2,10 @@ use std::str::FromStr;
 
 use did_doc_builder::schema::{
     did_doc::DIDDocument,
-    types::{did::Did, jsonwebkey::JsonWebKey, uri::Uri},
+    types::{jsonwebkey::JsonWebKey, uri::Uri},
     verification_method::{VerificationMethodAlias, VerificationMethodBuilder},
 };
-use did_parser::ParsedDIDUrl;
+use did_parser::{ParsedDID, ParsedDIDUrl};
 use serde_json::Value;
 
 const VALID_DID_DOC_JSON: &str = r##"
@@ -77,14 +77,14 @@ fn test_deserialization() {
 
     assert_eq!(
         did_doc.id(),
-        &Did::from_str("did:web:did.actor:alice").unwrap()
+        &ParsedDID::from_str("did:web:did.actor:alice").unwrap()
     );
     assert_eq!(
         did_doc.also_known_as(),
         vec![Uri::from_str("https://example.com/user-profile/123").unwrap()]
     );
 
-    let controller = Did::from_str("did:web:did.actor:alice").unwrap();
+    let controller = ParsedDID::from_str("did:web:did.actor:alice").unwrap();
 
     let pk_id = ParsedDIDUrl::from_str(
         "did:web:did.actor:alice#z6MkrmNwty5ajKtFqc1U48oL2MMLjWjartwc5sf2AihZwXDN",

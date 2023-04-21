@@ -1,6 +1,7 @@
 use aries_vcx_core::errors::error::AriesVcxCoreError;
 use did_resolver::{
     did_doc_builder::error::DIDDocumentBuilderError,
+    did_parser::ParseError,
     traits::resolvable::{
         resolution_error::DIDResolutionError, resolution_metadata::DIDResolutionMetadata,
     },
@@ -25,6 +26,8 @@ pub enum DIDSovError {
     DIDDocumentBuilderError(#[from] DIDDocumentBuilderError),
     #[error("Serde error: {0}")]
     SerdeError(#[from] serde_json::Error),
+    #[error("Parsing error: {0}")]
+    ParsingError(#[from] ParseError),
 }
 
 impl From<DIDSovError> for DIDResolutionError {

@@ -1,10 +1,7 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
 use did_resolver::{
-    did_doc_builder::schema::{
-        did_doc::DIDDocument,
-        service::Service,
-        types::{did::Did, uri::Uri},
-    },
+    did_doc_builder::schema::{did_doc::DIDDocument, service::Service, types::uri::Uri},
+    did_parser::ParsedDID,
     shared_types::did_document_metadata::DIDDocumentMetadata,
     traits::resolvable::{
         resolution_metadata::DIDResolutionMetadata, resolution_output::DIDResolutionOutput,
@@ -17,9 +14,9 @@ use crate::{
     service::{DidSovServiceType, EndpointDidSov},
 };
 
-fn prepare_ids(did: &str) -> Result<(Uri, Did), DIDSovError> {
+fn prepare_ids(did: &str) -> Result<(Uri, ParsedDID), DIDSovError> {
     let service_id = Uri::new(did.to_string())?;
-    let ddo_id = Did::new(did.to_string())?;
+    let ddo_id = ParsedDID::parse(did.to_string())?;
     Ok((service_id, ddo_id))
 }
 
@@ -44,7 +41,6 @@ fn posix_to_datetime(posix_timestamp: i64) -> Option<DateTime<Utc>> {
     }
 }
 
-// TODO: DID should be Did type
 pub(super) async fn resolve_ddo(did: &str, resp: &str) -> Result<DIDResolutionOutput, DIDSovError> {
     let (service_id, ddo_id) = prepare_ids(did)?;
 

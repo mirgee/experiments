@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use chrono::{DateTime, Utc};
-use did_doc_builder::schema::types::did::Did;
+use did_parser::ParsedDID;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
@@ -21,9 +21,9 @@ pub struct DIDDocumentMetadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     next_version_id: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    equivalent_id: Vec<Did>,
+    equivalent_id: Vec<ParsedDID>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    canonical_id: Option<Did>,
+    canonical_id: Option<ParsedDID>,
 }
 
 impl DIDDocumentMetadata {
@@ -55,11 +55,11 @@ impl DIDDocumentMetadata {
         self.next_version_id.as_ref()
     }
 
-    pub fn equivalent_id(&self) -> &[Did] {
+    pub fn equivalent_id(&self) -> &[ParsedDID] {
         self.equivalent_id.as_ref()
     }
 
-    pub fn canonical_id(&self) -> Option<&Did> {
+    pub fn canonical_id(&self) -> Option<&ParsedDID> {
         self.canonical_id.as_ref()
     }
 }
@@ -72,8 +72,8 @@ pub struct DIDDocumentMetadataBuilder {
     next_update: Option<DateTime<Utc>>,
     version_id: Option<String>,
     next_version_id: Option<String>,
-    equivalent_id: HashSet<Did>,
-    canonical_id: Option<Did>,
+    equivalent_id: HashSet<ParsedDID>,
+    canonical_id: Option<ParsedDID>,
 }
 
 impl DIDDocumentMetadataBuilder {
@@ -107,12 +107,12 @@ impl DIDDocumentMetadataBuilder {
         self
     }
 
-    pub fn add_equivalent_id(mut self, equivalent_id: Did) -> Self {
+    pub fn add_equivalent_id(mut self, equivalent_id: ParsedDID) -> Self {
         self.equivalent_id.insert(equivalent_id);
         self
     }
 
-    pub fn canonical_id(mut self, canonical_id: Did) -> Self {
+    pub fn canonical_id(mut self, canonical_id: ParsedDID) -> Self {
         self.canonical_id = Some(canonical_id);
         self
     }

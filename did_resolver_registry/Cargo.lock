@@ -93,6 +93,7 @@ dependencies = [
 name = "did_doc_builder"
 version = "0.1.0"
 dependencies = [
+ "did_parser",
  "multibase",
  "serde",
  "serde_json",
@@ -107,6 +108,7 @@ dependencies = [
  "once_cell",
  "ouroboros",
  "regex",
+ "serde",
 ]
 
 [[package]]
