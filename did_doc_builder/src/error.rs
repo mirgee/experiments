@@ -1,5 +1,3 @@
-use did_parser::ParseError;
-
 #[derive(Debug)]
 pub enum DIDDocumentBuilderError {
     InvalidInput(String),
