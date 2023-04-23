@@ -40,7 +40,7 @@ fn content_stream_from(
     did_url: &ParsedDIDUrl,
 ) -> Result<Cursor<Vec<u8>>, DIDSovError> {
     let fragment = did_url.fragment().ok_or_else(|| {
-        DIDSovError::InvalidDID("No fragment provided in the DID URL".to_string())
+        DIDSovError::InvalidDID(format!("No fragment provided in the DID URL {}", did_url))
     })?;
 
     let did_url_string = did_url.to_string();
@@ -54,7 +54,7 @@ fn content_stream_from(
         (Some(service), None) => serde_json::to_value(service)?,
         (None, Some(authentication)) => serde_json::to_value(authentication)?,
         (None, None) => {
-            return Err(DIDSovError::InvalidDID(format!(
+            return Err(DIDSovError::NotFound(format!(
                 "Fragment '{}' not found in the DID document",
                 fragment
             )));
@@ -69,7 +69,7 @@ fn content_stream_from(
     Ok(Cursor::new(value.to_string().into_bytes()))
 }
 
-// TODO: Currently, only fragment dereferencing is supported.
+// TODO: Currently, only fragment dereferencing is supported
 pub(crate) fn dereference_did_document(
     resolution_output: &DIDResolutionOutput,
     did_url: &ParsedDIDUrl,

@@ -10,7 +10,7 @@ use did_resolver::{
 use serde_json::Value;
 
 use crate::{
-    error::DIDSovError,
+    error::{parsing::ParsingErrorSource, DIDSovError},
     service::{DidSovServiceType, EndpointDidSov},
 };
 
@@ -22,14 +22,21 @@ fn prepare_ids(did: &str) -> Result<(Uri, ParsedDID), DIDSovError> {
 
 fn get_data_from_response(resp: &str) -> Result<Value, DIDSovError> {
     let resp: serde_json::Value = serde_json::from_str(resp)?;
-    serde_json::from_str(resp["result"]["data"].as_str().unwrap_or("{}")).map_err(|err| err.into())
+    let data = resp["result"]["data"].as_str().ok_or_else(|| {
+        DIDSovError::ParsingError(ParsingErrorSource::LedgerResponseParsingError(
+            "No data field in the ledger response",
+        ))
+    })?;
+    serde_json::from_str(data).map_err(|err| err.into())
 }
 
 fn get_txn_time_from_response(resp: &str) -> Result<i64, DIDSovError> {
     let resp: serde_json::Value = serde_json::from_str(resp)?;
     let txn_time = resp["result"]["txnTime"]
         .as_i64()
-        .ok_or(DIDSovError::InternalError)?;
+        .ok_or(DIDSovError::ParsingError(
+            ParsingErrorSource::LedgerResponseParsingError("Failed to parse txnTime"),
+        ))?;
     Ok(txn_time)
 }
 

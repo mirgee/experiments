@@ -1,2 +1,2 @@
-mod did;
-mod did_url;
+mod parsed_did;
+mod parsed_did_url;
