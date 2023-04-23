@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -95,6 +95,10 @@ impl ParsedDIDUrl {
         })
     }
 
+    pub fn did_url(&self) -> &str {
+        self.did_url.as_ref()
+    }
+
     pub fn did(&self) -> Option<&str> {
         self.did.clone().map(|range| self.did_url[range].as_ref())
     }
@@ -149,6 +153,12 @@ impl FromStr for ParsedDIDUrl {
 
     fn from_str(did_url: &str) -> Result<Self, Self::Err> {
         Self::parse(did_url.to_string())
+    }
+}
+
+impl Display for ParsedDIDUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.did_url)
     }
 }
 

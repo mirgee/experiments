@@ -11,6 +11,7 @@ use self::{resolution_options::DIDResolutionOptions, resolution_output::DIDResol
 
 #[async_trait]
 pub trait DIDResolvable {
+    // TODO: Can do with references
     async fn resolve(
         &mut self,
         did: ParsedDID,

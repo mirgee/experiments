@@ -3,14 +3,17 @@ use std::io::Read;
 
 use super::dereferencing_metadata::DIDDereferencingMetadata;
 
-pub struct DIDDereferencingOutput {
+pub struct DIDDereferencingOutput<R: Read + Send + Sync> {
     dereferencing_metadata: DIDDereferencingMetadata,
-    content_stream: Box<dyn Read + Send + Sync>,
+    content_stream: R,
     content_metadata: DIDDocumentMetadata,
 }
 
-impl DIDDereferencingOutput {
-    pub fn builder(content_stream: Box<dyn Read + Send + Sync>) -> DIDDereferencingOutputBuilder {
+impl<R> DIDDereferencingOutput<R>
+where
+    R: Read + Send + Sync,
+{
+    pub fn builder(content_stream: R) -> DIDDereferencingOutputBuilder<R> {
         DIDDereferencingOutputBuilder {
             dereferencing_metadata: None,
             content_stream,
@@ -22,7 +25,7 @@ impl DIDDereferencingOutput {
         &self.dereferencing_metadata
     }
 
-    pub fn content_stream(&self) -> &Box<dyn std::io::Read + Send + Sync> {
+    pub fn content_stream(&self) -> &R {
         &self.content_stream
     }
 
@@ -31,13 +34,16 @@ impl DIDDereferencingOutput {
     }
 }
 
-pub struct DIDDereferencingOutputBuilder {
+pub struct DIDDereferencingOutputBuilder<R: Read + Send + Sync> {
     dereferencing_metadata: Option<DIDDereferencingMetadata>,
-    content_stream: Box<dyn Read + Send + Sync>,
+    content_stream: R,
     content_metadata: Option<DIDDocumentMetadata>,
 }
 
-impl DIDDereferencingOutputBuilder {
+impl<R> DIDDereferencingOutputBuilder<R>
+where
+    R: Read + Send + Sync,
+{
     pub fn dereferencing_metadata(
         mut self,
         dereferencing_metadata: DIDDereferencingMetadata,
@@ -51,7 +57,7 @@ impl DIDDereferencingOutputBuilder {
         self
     }
 
-    pub fn build(self) -> DIDDereferencingOutput {
+    pub fn build(self) -> DIDDereferencingOutput<R> {
         DIDDereferencingOutput {
             dereferencing_metadata: self.dereferencing_metadata.unwrap_or_default(),
             content_stream: self.content_stream,

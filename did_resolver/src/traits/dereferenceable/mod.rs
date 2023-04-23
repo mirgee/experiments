@@ -3,6 +3,8 @@ pub mod dereferencing_metadata;
 pub mod dereferencing_options;
 pub mod dereferencing_output;
 
+use std::io::Read;
+
 use crate::{error::GenericError, traits::resolvable::DIDResolvable};
 use async_trait::async_trait;
 use did_parser::ParsedDIDUrl;
@@ -13,9 +15,12 @@ use self::{
 
 #[async_trait]
 pub trait DIDDereferenceable: DIDResolvable {
+    type Output: Read + Send + Sync;
+
+    // TODO: Can do with references
     async fn dereference(
         &mut self,
         did: ParsedDIDUrl,
         options: DIDDereferencingOptions,
-    ) -> Result<DIDDereferencingOutput, GenericError>;
+    ) -> Result<DIDDereferencingOutput<Self::Output>, GenericError>;
 }

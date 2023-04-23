@@ -1,8 +1,10 @@
+use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+use crate::ParsedDIDUrl;
 use crate::{error::ParseError, is_valid_did, utils::parse::parse_did_method_id, DIDRange};
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash)]
@@ -66,5 +68,20 @@ impl<'de> Deserialize<'de> for ParsedDID {
     {
         let did = String::deserialize(deserializer)?;
         Self::parse(did).map_err(serde::de::Error::custom)
+    }
+}
+
+impl TryFrom<&ParsedDIDUrl> for ParsedDID {
+    type Error = ParseError;
+
+    fn try_from(did_url: &ParsedDIDUrl) -> Result<Self, Self::Error> {
+        Self::parse(
+            did_url
+                .did()
+                .ok_or(Self::Error::InvalidInput(
+                    "No DID provided in the DID URL".to_string(),
+                ))?
+                .to_string(),
+        )
     }
 }
