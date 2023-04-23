@@ -21,7 +21,11 @@ pub struct VerificationMethod {
     id: ParsedDIDUrl,
     controller: ParsedDID,
     r#type: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     public_key_multibase: Option<Multibase>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     public_key_jwk: Option<JsonWebKey>,
     #[serde(flatten)]
     #[serde(skip_serializing_if = "HashMap::is_empty")]
@@ -30,8 +34,12 @@ pub struct VerificationMethod {
 }
 
 impl VerificationMethod {
-    pub fn builder() -> VerificationMethodBuilder {
-        VerificationMethodBuilder::default()
+    pub fn builder(
+        id: ParsedDIDUrl,
+        controller: ParsedDID,
+        r#type: String,
+    ) -> VerificationMethodBuilder {
+        VerificationMethodBuilder::new(id, controller, r#type)
     }
 
     pub fn id(&self) -> &ParsedDIDUrl {
@@ -149,7 +157,7 @@ mod tests {
         let id = create_valid_did_url();
         let controller = create_valid_did();
         let r#type = create_valid_verification_key_type();
-        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+        let vm = VerificationMethod::builder(id.clone(), controller.clone(), r#type.clone())
             .build()
             .unwrap();
         assert_eq!(vm.id(), &id);
@@ -162,7 +170,7 @@ mod tests {
         let r#type = create_valid_verification_key_type();
         let public_key_multibase = create_valid_multibase();
 
-        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+        let vm = VerificationMethod::builder(id.clone(), controller.clone(), r#type.clone())
             .add_public_key_multibase(public_key_multibase.clone())
             .build()
             .unwrap();
@@ -181,7 +189,7 @@ mod tests {
         let extra_key = "foo".to_string();
         let extra_value = Value::String("bar".to_string());
 
-        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+        let vm = VerificationMethod::builder(id.clone(), controller.clone(), r#type.clone())
             .add_extra(extra_key.clone(), extra_value.clone())
             .build()
             .unwrap();
@@ -197,7 +205,7 @@ mod tests {
         let extra_key = "foo".to_string();
         let extra_value = Value::String("bar".to_string());
 
-        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+        let vm = VerificationMethod::builder(id.clone(), controller.clone(), r#type.clone())
             .add_public_key_multibase(public_key_multibase.clone())
             .add_extra(extra_key.clone(), extra_value.clone())
             .build()
@@ -218,7 +226,7 @@ mod tests {
         let public_key_multibase = create_valid_multibase();
         let public_key_jwk = JsonWebKey::new(create_valid_jsonwebkey_string()).unwrap();
 
-        let vm = VerificationMethodBuilder::new(id.clone(), controller.clone(), r#type.clone())
+        let vm = VerificationMethod::builder(id.clone(), controller.clone(), r#type.clone())
             .add_public_key_multibase(public_key_multibase.clone())
             .add_public_key_jwk(public_key_jwk.clone())
             .build();
