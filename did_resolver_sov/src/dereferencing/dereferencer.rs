@@ -23,13 +23,13 @@ impl DIDDereferenceable for DIDSovResolver {
 
     async fn dereference(
         &mut self,
-        did_url: ParsedDIDUrl,
-        _options: DIDDereferencingOptions,
+        did_url: &ParsedDIDUrl,
+        _options: &DIDDereferencingOptions,
     ) -> Result<DIDDereferencingOutput<Self::Output>, GenericError> {
         let resolution_output = self
-            .resolve((&did_url).try_into()?, DIDResolutionOptions::default())
+            .resolve(&did_url.try_into()?, &DIDResolutionOptions::default())
             .await?;
 
-        dereference_did_document(resolution_output, &did_url).map_err(|err| err.into())
+        dereference_did_document(&resolution_output, &did_url).map_err(|err| err.into())
     }
 }

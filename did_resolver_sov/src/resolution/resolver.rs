@@ -34,8 +34,8 @@ impl DIDSovResolver {
 impl DIDResolvable for DIDSovResolver {
     async fn resolve(
         &mut self,
-        parsed_did: ParsedDID,
-        _options: DIDResolutionOptions,
+        parsed_did: &ParsedDID,
+        _options: &DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError> {
         let did = parsed_did.did();
         if let Some(resolution_output) = self.cache.get(did) {

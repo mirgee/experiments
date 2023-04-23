@@ -17,10 +17,9 @@ use self::{
 pub trait DIDDereferenceable: DIDResolvable {
     type Output: Read + Send + Sync;
 
-    // TODO: Can do with references
     async fn dereference(
         &mut self,
-        did: ParsedDIDUrl,
-        options: DIDDereferencingOptions,
+        did: &ParsedDIDUrl,
+        options: &DIDDereferencingOptions,
     ) -> Result<DIDDereferencingOutput<Self::Output>, GenericError>;
 }

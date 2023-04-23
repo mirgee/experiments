@@ -33,8 +33,8 @@ impl ResolverRegistry {
 
     pub async fn resolve(
         &mut self,
-        did: ParsedDID,
-        options: DIDResolutionOptions,
+        did: &ParsedDID,
+        options: &DIDResolutionOptions,
     ) -> Result<DIDResolutionOutput, GenericError> {
         let method = did.method();
         match self.resolvers.get_mut(method) {
@@ -59,8 +59,8 @@ mod tests {
     impl DIDResolvable for DummyDIDResolver {
         async fn resolve(
             &mut self,
-            did: ParsedDID,
-            _options: DIDResolutionOptions,
+            did: &ParsedDID,
+            _options: &DIDResolutionOptions,
         ) -> Result<DIDResolutionOutput, GenericError> {
             Ok(DIDResolutionOutput::builder(
                 DIDDocumentBuilder::new(ParsedDID::parse(did.did().to_string()).unwrap()).build(),
@@ -100,7 +100,9 @@ mod tests {
         let mut registry = ResolverRegistry::new();
         registry.register_resolver(method, Box::new(mock_resolver));
 
-        let result = registry.resolve(did, DIDResolutionOptions::default()).await;
+        let result = registry
+            .resolve(&did, &DIDResolutionOptions::default())
+            .await;
         assert!(result.is_err());
 
         let error = result.unwrap_err();
@@ -139,7 +141,7 @@ mod tests {
         registry.register_resolver(method, Box::new(mock_resolver));
 
         let result = registry
-            .resolve(parsed_did, DIDResolutionOptions::default())
+            .resolve(&parsed_did, &DIDResolutionOptions::default())
             .await;
         assert!(result.is_ok());
     }
@@ -166,7 +168,9 @@ mod tests {
         let did = ParsedDID::parse("did:unknown:1234".to_string()).unwrap();
 
         let mut registry = ResolverRegistry::new();
-        let result = registry.resolve(did, DIDResolutionOptions::default()).await;
+        let result = registry
+            .resolve(&did, &DIDResolutionOptions::default())
+            .await;
 
         assert!(result.is_err());
         let error = result.unwrap_err();
@@ -204,7 +208,7 @@ mod tests {
         let mut registry = ResolverRegistry::new();
 
         let result_before = registry
-            .resolve(parsed_did.clone(), DIDResolutionOptions::default())
+            .resolve(&parsed_did, &DIDResolutionOptions::default())
             .await;
         assert!(result_before.is_err());
         let error_before = result_before.unwrap_err();
@@ -217,7 +221,7 @@ mod tests {
         registry.register_resolver(method, Box::new(mock_resolver));
 
         let result_after = registry
-            .resolve(parsed_did, DIDResolutionOptions::default())
+            .resolve(&parsed_did, &DIDResolutionOptions::default())
             .await;
         assert!(result_after.is_ok());
     }

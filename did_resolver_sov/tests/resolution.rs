@@ -33,8 +33,8 @@ async fn write_service_on_ledger_and_resolve_did_doc() {
             DIDSovResolver::new(init.profile.inject_ledger(), NonZeroUsize::new(10).unwrap());
         let did_doc = resolver
             .resolve(
-                ParsedDID::parse(did.clone()).unwrap(),
-                DIDResolutionOptions::default(),
+                &ParsedDID::parse(did.clone()).unwrap(),
+                &DIDResolutionOptions::default(),
             )
             .await
             .unwrap();
@@ -52,8 +52,8 @@ async fn test_resolver_caching_behavior() {
         ) -> DIDResolutionOutput {
             let did_doc = resolver
                 .resolve(
-                    ParsedDID::parse(did.clone()).unwrap(),
-                    DIDResolutionOptions::default(),
+                    &ParsedDID::parse(did.clone()).unwrap(),
+                    &DIDResolutionOptions::default(),
                 )
                 .await
                 .unwrap();
@@ -100,8 +100,8 @@ async fn test_error_handling_during_resolution() {
 
         let result = resolver
             .resolve(
-                ParsedDID::parse(did.clone()).unwrap(),
-                DIDResolutionOptions::default(),
+                &ParsedDID::parse(did.clone()).unwrap(),
+                &DIDResolutionOptions::default(),
             )
             .await;
 

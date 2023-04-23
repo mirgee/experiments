@@ -70,7 +70,7 @@ fn content_stream_from(
 }
 
 pub(crate) fn dereference_did_document(
-    resolution_output: DIDResolutionOutput,
+    resolution_output: &DIDResolutionOutput,
     did_url: &ParsedDIDUrl,
 ) -> Result<DIDDereferencingOutput<Cursor<Vec<u8>>>, DIDSovError> {
     let content_stream = content_stream_from(resolution_output.did_document(), did_url)?;
