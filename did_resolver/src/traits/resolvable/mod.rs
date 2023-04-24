@@ -10,6 +10,7 @@ use did_parser::ParsedDID;
 use self::{resolution_options::DIDResolutionOptions, resolution_output::DIDResolutionOutput};
 
 #[async_trait]
+#[cfg_attr(test, mockall::automock)]
 pub trait DIDResolvable {
     async fn resolve(
         &mut self,

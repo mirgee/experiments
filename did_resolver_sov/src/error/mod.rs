@@ -11,6 +11,7 @@ use self::parsing::ParsingErrorSource;
 // should me mapped accordingly
 // TODO: Perhaps split into input errors and external errors?
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum DIDSovError {
     #[error("Not found: {0}")]
     NotFound(String),
