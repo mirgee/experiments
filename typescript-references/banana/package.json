@@ -1,0 +1,17 @@
+{
+  "name": "banana",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "compile": "tsc -p tsconfig.alt.json",
+    "watch": "tsc --build --watch"
+  },
+  "dependencies": {
+    "apple": "file:../apple",
+    "typescript": "^5.2.2"
+  },
+  "author": "",
+  "license": "ISC"
+}

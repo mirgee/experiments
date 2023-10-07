@@ -1,0 +1,18 @@
+{
+  "name": "typescript-references-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc --build",
+    "watch": "tsc --build --watch",
+    "clean": "rimraf dist **/dist tsconfig.tsbuildinfo",
+    "test": "node ./dist/banana/src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2"
+  }
+}
