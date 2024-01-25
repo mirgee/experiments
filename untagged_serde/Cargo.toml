@@ -1,0 +1,11 @@
+[package]
+name = "untagged_serde"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.163", features = ["derive"] }
+did_doc = { path = "/Users/ab006rh/Source/aries-vcx/did_doc/" }
+serde_json = "1.0.96"
