@@ -1,1 +1,0 @@
-pub type MediaType = String;
