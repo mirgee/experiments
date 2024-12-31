@@ -3,12 +3,14 @@ package blockchain
 import (
 	"bytes"
 	"crypto/md5"
+	"math/rand"
 )
 
 type Block struct {
 	Hash     string
 	Data     string
 	PrevHash string
+	Nonce    int
 }
 
 func (b *Block) computeHash() {
@@ -17,16 +19,21 @@ func (b *Block) computeHash() {
 	b.Hash = string(hash[:])
 }
 
+// TODO: POW should not depend on Block
 func CreateBlock(data string, prevHash string) *Block {
 	block := &Block{
 		"",
 		data,
 		prevHash,
+		rand.Intn(65536),
 	}
-  block.computeHash()
-  return block
+	pow := NewProofOfWork(block)
+	nonce, hash := pow.MineBlock()
+	block.Nonce = nonce
+	block.Hash = string(hash[:])
+	return block
 }
 
 func Genesis() *Block {
-  return CreateBlock("genesis", "")
+	return CreateBlock("genesis", "")
 }
