@@ -7,10 +7,11 @@ import (
 )
 
 type Block struct {
-	Hash     string
-	Data     string
-	PrevHash string
-	Nonce    int
+	Hash         string
+	Data         string
+	PrevHash     string
+	Nonce        int
+	Transactions []*Transaction
 }
 
 func (b *Block) computeHash() {
@@ -20,12 +21,13 @@ func (b *Block) computeHash() {
 }
 
 // TODO: POW should not depend on Block
-func CreateBlock(data string, prevHash string) *Block {
+func CreateBlock(data string, prevHash string, txs []*Transaction) *Block {
 	block := &Block{
 		"",
 		data,
 		prevHash,
 		rand.Intn(65536),
+		txs,
 	}
 	pow := NewProofOfWork(block)
 	nonce, hash := pow.MineBlock()
@@ -35,5 +37,10 @@ func CreateBlock(data string, prevHash string) *Block {
 }
 
 func Genesis() *Block {
-	return CreateBlock("genesis", "")
+	return CreateBlock("genesis", "", []*Transaction{{
+		"coinbase",
+		"genesis",
+		BlockReward,
+		true,
+	}})
 }

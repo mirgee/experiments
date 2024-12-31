@@ -8,6 +8,7 @@ import (
 )
 
 const Difficulty = 10
+const BlockReward = 10
 
 type ProofOfWork struct {
 	Block  *Block
