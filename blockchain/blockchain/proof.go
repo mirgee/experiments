@@ -7,8 +7,10 @@ import (
 	"math/big"
 )
 
-const Difficulty = 10
-const BlockReward = 10
+const (
+	Difficulty  = 10
+	BlockReward = 10
+)
 
 type ProofOfWork struct {
 	Block  *Block
@@ -25,32 +27,31 @@ func NewProofOfWork(block *Block) *ProofOfWork {
 }
 
 func (pow *ProofOfWork) ComputeData(nonce int) []byte {
-  buf := new(bytes.Buffer)
-  buf.WriteString(pow.Block.PrevHash)
-  buf.WriteString(pow.Block.Data);
-  binary.Write(buf, binary.BigEndian, uint64(nonce));
-  binary.Write(buf, binary.BigEndian, uint64(Difficulty));
-  return buf.Bytes()
+	buf := new(bytes.Buffer)
+	buf.WriteString(pow.Block.PrevHash)
+	buf.WriteString(pow.Block.Data)
+	binary.Write(buf, binary.BigEndian, uint64(nonce))
+	binary.Write(buf, binary.BigEndian, uint64(Difficulty))
+	return buf.Bytes()
 }
 
 func (pow *ProofOfWork) MineBlock() (int, []byte) {
-  for nonce := 0; ; nonce++ {
-    data := pow.ComputeData(nonce)
-    hash := md5.Sum(data)
+	for nonce := 0; ; nonce++ {
+		data := pow.ComputeData(nonce)
+		hash := md5.Sum(data)
 
-    if new(big.Int).SetBytes(hash[:]).Cmp(pow.Target) == -1 {
-      return nonce, hash[:]
-    }
-  }
+		if new(big.Int).SetBytes(hash[:]).Cmp(pow.Target) == -1 {
+			return nonce, hash[:]
+		}
+	}
 }
 
 func (pow *ProofOfWork) Validate() bool {
-  data := pow.ComputeData(pow.Block.Nonce)
-  hash := md5.Sum(data)
-
-    if new(big.Int).SetBytes(hash[:]).Cmp(pow.Target) == -1 {
-      return true
-    } else {
-      return false
-    }
+	data := pow.ComputeData(pow.Block.Nonce)
+	hash := md5.Sum(data)
+	if new(big.Int).SetBytes(hash[:]).Cmp(pow.Target) == -1 {
+		return true
+	} else {
+		return false
+	}
 }

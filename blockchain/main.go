@@ -8,25 +8,26 @@ import (
 func main() {
 	chain := blockchain.InitBlockchain()
 
-	chain.AddBlock("Block 1", "Recipient 1", []*blockchain.Transaction{{
-		Sender:   "Alice",
-		Receiver: "Bob",
-		Amount:   5,
-	}, {
-		Sender:   "Alice",
-		Receiver: "Carol",
-		Amount:   2,
-	}})
-	chain.AddBlock("Block 2", "Recipient 2", []*blockchain.Transaction{{
-		Sender:   "Bob",
-		Receiver: "Charlie",
-		Amount:   1,
-	}})
-	chain.AddBlock("Block 3", "Recipient 3", []*blockchain.Transaction{{
-		Sender:   "Charlie",
-		Receiver: "Alice",
-		Amount:   1,
-	}})
+  aliceWallet, _ := blockchain.NewWallet()
+  bobWallet, _ := blockchain.NewWallet()
+  tx := &blockchain.Transaction{
+  	Sender:   aliceWallet.PublicKey.N.String(),
+  	Receiver: bobWallet.PublicKey.N.String(),
+  	Amount:   5,
+  	Coinbase: false,
+  }
+  sigBase64, err := aliceWallet.SignTransaction(tx)
+  if err != nil {
+    fmt.Println("Transaction signing failed:", err)
+    return 
+  }
+  err = blockchain.VerifyTransaction(tx, aliceWallet.PublicKey, sigBase64)
+  if err != nil {
+    fmt.Println("Transaction signature invalid:", err)
+    return
+  }
+
+	chain.AddBlock("Block 1", "Alice 1", []*blockchain.Transaction{tx})
 
 	for i, block := range chain.Blocks {
 		fmt.Printf("BLOCK %v\n", i+1)

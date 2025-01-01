@@ -1,8 +1,6 @@
 package blockchain
 
 import (
-	"bytes"
-	"crypto/md5"
 	"math/rand"
 )
 
@@ -12,12 +10,6 @@ type Block struct {
 	PrevHash     string
 	Nonce        int
 	Transactions []*Transaction
-}
-
-func (b *Block) computeHash() {
-	concatenated := bytes.Join([][]byte{[]byte(b.Data), []byte(b.PrevHash)}, []byte{})
-	hash := md5.Sum(concatenated)
-	b.Hash = string(hash[:])
 }
 
 // TODO: POW should not depend on Block
